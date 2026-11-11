@@ -293,8 +293,10 @@ fn bytes(u: &Uniforms) -> &[u8] {
 }
 
 impl Compositor<State> for Viz {
+    /// Never: frames come from `poll` (about 30 a second while playing, via `State::tick`),
+    /// not from the display link, which would draw at the display's 60 or 120 Hz.
     fn animating(&self) -> bool {
-        self.playing
+        false
     }
 
     fn render(&mut self, f: &mut Frame<'_, State>) {

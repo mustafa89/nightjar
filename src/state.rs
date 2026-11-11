@@ -101,6 +101,9 @@ pub struct State {
     engine: Option<Engine>,
     reader: Option<MetaReader>,
     bridge: Option<Bridge>,
+    /// Play order as playlist rows: the playlist's own order, or a shuffle with the current
+    /// track first. Rebuilt when shuffle toggles or the playlist changes.
+    order: Vec<usize>,
     youtube: Option<YouTube>,
     arts: Option<ArtStore>,
     art_source: Option<art::Source>,
@@ -116,6 +119,9 @@ pub struct State {
     pub progress: Live<[f32; 4]>,
     pub knob: Live<[f32; 2]>,
     pub clock: LiveText,
+    /// Flipped every poll while playing: a 0.001 pt nudge on the visualizer slot that draws
+    /// one frame per poll (about 30 a second) instead of one per display refresh.
+    pub tick: Live<[f32; 2]>,
 }
 
 impl State {
@@ -149,6 +155,7 @@ impl State {
             engine: None,
             reader: None,
             bridge: None,
+            order: Vec::new(),
             youtube: None,
             arts: None,
             art_source: None,
@@ -169,6 +176,7 @@ impl State {
             progress: Live::new([0.0, 0.0, 0.0, 4.0]),
             knob: Live::new([0.0, 0.0]),
             clock: LiveText::new("00:00"),
+            tick: Live::new([0.0, 0.0]),
         };
         st.tracks = s
             .playlist
@@ -179,6 +187,7 @@ impl State {
         if !st.tracks.is_empty() {
             st.selected = Some(0);
         }
+        st.rebuild_order();
         st
     }
 
@@ -186,7 +195,9 @@ impl State {
     /// line join the playlist and the first of them plays.
     pub fn start(&mut self, waker: rune::Waker) {
         self.bridge = Some(Bridge::start(Some(waker.clone())));
-        self.youtube = Some(YouTube::start(Some(waker.clone())));
+        if self.youtube.is_none() {
+            self.youtube = Some(YouTube::start(Some(waker.clone())));
+        }
         self.arts = Some(ArtStore::new(waker.clone()));
         let reader = MetaReader::spawn(Some(waker));
         for t in &self.tracks {
@@ -370,6 +381,7 @@ impl State {
             self.tracks.push(Track::new(p));
         }
         self.selected.get_or_insert(self.tracks.len() - n);
+        self.rebuild_order();
         self.say(format!("Added {n} track{}", if n == 1 { "" } else { "s" }));
         self.save();
     }
@@ -392,6 +404,7 @@ impl State {
         } else {
             Some(i.min(self.tracks.len() - 1))
         };
+        self.rebuild_order();
         self.save();
     }
 
@@ -400,6 +413,7 @@ impl State {
         self.tracks.clear();
         self.current = None;
         self.selected = None;
+        self.order.clear();
         self.say("Playlist cleared");
         self.save();
     }
@@ -499,28 +513,50 @@ impl State {
         (self.seed.wrapping_mul(0x2545_F491_4F6C_DD1D) >> 33) as usize % n
     }
 
-    /// The track after `current`, or None at the end of a non-repeating list.
-    fn following(&mut self, step: isize) -> Option<usize> {
+    /// The playlist's order, or with shuffle on a fresh shuffle (Fisher-Yates) that starts at
+    /// the current (else selected) track, so what plays next is known in advance.
+    pub fn rebuild_order(&mut self) {
         let n = self.tracks.len();
+        self.order = (0..n).collect();
+        if !self.shuffle || n < 2 {
+            return;
+        }
+        for i in (1..n).rev() {
+            let j = self.random(i + 1);
+            self.order.swap(i, j);
+        }
+        if let Some(first) = self.current.or(self.selected)
+            && let Some(p) = self.order.iter().position(|&i| i == first)
+        {
+            self.order.swap(0, p);
+        }
+    }
+
+    /// The play order, falling back to playlist order if it's out of date.
+    fn play_order(&self) -> std::borrow::Cow<'_, [usize]> {
+        if self.order.len() == self.tracks.len() {
+            std::borrow::Cow::Borrowed(&self.order)
+        } else {
+            std::borrow::Cow::Owned((0..self.tracks.len()).collect())
+        }
+    }
+
+    /// The track `step` places from `current` in play order, or None past the end of a
+    /// non-repeating list.
+    fn following(&mut self, step: isize) -> Option<usize> {
+        let order = self.play_order();
+        let n = order.len() as isize;
         if n == 0 {
             return None;
         }
-        if self.shuffle && n > 1 {
-            let cur = self.current.unwrap_or(0);
-            let mut r = self.random(n - 1);
-            if r >= cur {
-                r += 1;
-            }
-            return Some(r);
-        }
         let Some(cur) = self.current else {
-            return Some(0);
+            return Some(order[0]);
         };
-        let next = cur as isize + step;
-        if (0..n as isize).contains(&next) {
-            Some(next as usize)
+        let pos = order.iter().position(|&i| i == cur).unwrap_or(0) as isize + step;
+        if (0..n).contains(&pos) {
+            Some(order[pos as usize])
         } else if self.repeat == Repeat::All {
-            Some(next.rem_euclid(n as isize) as usize)
+            Some(order[pos.rem_euclid(n) as usize])
         } else {
             None
         }
@@ -633,6 +669,12 @@ impl State {
         self.save();
     }
 
+    /// Headless scenes: YouTube as if the helper had just reported `status`.
+    pub fn fake_youtube(&mut self, status: youtube::Status) {
+        self.source = Source::YouTube;
+        self.youtube = Some(YouTube::offline(status));
+    }
+
     pub fn toggle_layout(&mut self) {
         self.modern = !self.modern;
         self.save();
@@ -678,38 +720,39 @@ impl State {
 
     /// Up to `n` playlist rows after the current track (from the selection when nothing is
     /// loaded), wrapping when the playlist repeats; the track itself when it repeats.
+    /// Up to `n` rows that play after the current track, in play order (shuffled when shuffle
+    /// is on), wrapping when the playlist repeats; the track itself when it repeats. With
+    /// nothing loaded: from the selection.
     pub fn up_next(&self, n: usize) -> Vec<usize> {
-        let len = self.tracks.len();
+        let order = self.play_order();
+        let len = order.len();
         let Some(cur) = self.current else {
-            let start = self.selected.unwrap_or(0).min(len);
-            return (start..len).take(n).collect();
+            let start = self
+                .selected
+                .and_then(|s| order.iter().position(|&i| i == s))
+                .unwrap_or(0)
+                .min(len);
+            return order[start..].iter().copied().take(n).collect();
         };
         if self.repeat == Repeat::One {
             return vec![cur];
         }
+        let at = order.iter().position(|&i| i == cur).unwrap_or(0);
         let mut out = Vec::new();
-        let mut i = cur;
-        while out.len() < n {
-            i += 1;
-            if i >= len {
-                if self.repeat != Repeat::All || len == 0 {
-                    break;
-                }
-                i = 0;
-            }
-            if i == cur {
+        for k in 1..len {
+            if out.len() == n || (at + k >= len && self.repeat != Repeat::All) {
                 break;
             }
-            out.push(i);
+            out.push(order[(at + k) % len]);
         }
         out
     }
 
-    /// Why the up-next list isn't the whole story, when it isn't.
+    /// A line over the up-next list when the list alone doesn't say it.
     pub fn up_next_note(&self) -> Option<&'static str> {
         match (self.shuffle, self.repeat) {
-            (true, _) => Some("Shuffle is on: the next track is picked at random"),
-            (false, Repeat::One) => Some("Repeating this track"),
+            (_, Repeat::One) => Some("Repeating this track"),
+            (true, _) => Some("Shuffled"),
             _ => None,
         }
     }
@@ -723,6 +766,7 @@ impl State {
 
     pub fn toggle_shuffle(&mut self) {
         self.shuffle = !self.shuffle;
+        self.rebuild_order();
         self.say(if self.shuffle {
             "Shuffle on"
         } else {
@@ -824,7 +868,8 @@ impl State {
         self.publish();
         self.notify();
         if self.now_play() == Play::Playing || moving {
-            tx.wake_after(Duration::from_millis(16));
+            // About 30 frames a second: bars, the clock and the visualizer all follow this.
+            tx.wake_after(Duration::from_millis(33));
         } else if self.bridge.is_some() {
             // The notch app's once-a-second heartbeat.
             tx.wake_after(Duration::from_secs(1));
@@ -876,6 +921,10 @@ impl State {
 
     /// Pushes levels, progress and the clock into the live values.
     pub fn publish(&self) {
+        if self.now_play() == Play::Playing {
+            let [_, y] = self.tick.get();
+            self.tick.set([0.0, if y == 0.0 { 0.001 } else { 0.0 }]);
+        }
         let l = &self.analyzer.levels;
         for i in 0..BANDS {
             let h = (l.bands[i] * BAR_H).round().clamp(0.0, BAR_H);

@@ -151,6 +151,35 @@ fn modern(s: &mut State) {
     s.art = Some(image);
 }
 
+/// The modern layout on YouTube, with a queue.
+fn youtube_queue(s: &mut State) {
+    modern(s);
+    let queue = [
+        ("Glass Garden", "Mira Okafor", "3:18"),
+        ("Paper Moons", "The Lanterns", "3:41"),
+        ("Low Tide", "Sola", "4:25"),
+    ]
+    .iter()
+    .map(|q| youtube::QueueItem {
+        title: q.0.into(),
+        artist: q.1.into(),
+        dur: q.2.into(),
+    })
+    .collect();
+    s.fake_youtube(youtube::Status {
+        state: "playing".into(),
+        title: "Night Drive".into(),
+        artist: "The Lanterns".into(),
+        album: "Coastline".into(),
+        pos: 64.0,
+        dur: 247.0,
+        signed_in: true,
+        tap: "ok".into(),
+        queue,
+        ..Default::default()
+    });
+}
+
 /// The modern layout for a track without art.
 fn modern_noart(s: &mut State) {
     deck(s);
@@ -184,6 +213,7 @@ fn main() {
             ("youtube", youtube),
             ("modern", modern),
             ("modern-noart", modern_noart),
+            ("youtube-queue", youtube_queue),
         ],
         fonts: rune_theme_opencode::FONTS,
         families: rune_theme_opencode::FAMILIES,
@@ -300,11 +330,17 @@ mod tests {
         assert_eq!(s.up_next(2), vec![3, 4]);
         s.repeat = state::Repeat::One;
         assert_eq!(s.up_next(10), vec![2]);
-        s.shuffle = true;
-        assert!(
-            s.up_next_note().is_some(),
-            "shuffle says the order is random"
+        s.repeat = state::Repeat::All;
+        s.toggle_shuffle();
+        let next = s.up_next(10);
+        let mut seen = next.clone();
+        seen.sort();
+        assert_eq!(
+            seen,
+            vec![0, 1, 3, 4, 5],
+            "shuffled: every other track once"
         );
+        assert_eq!(s.up_next(10), next, "and the same order on every look");
     }
 
     #[test]

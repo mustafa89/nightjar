@@ -4,8 +4,13 @@ import Foundation
 /// plain text, `name` or `name value` (toggle, next, prev, show, seek 42.5, volume 0.6).
 @MainActor
 final class Link {
-    static let statusPort: UInt16 = 47813
-    static let commandPort: UInt16 = 47814
+    // NJYT_STATUS_PORT / NJYT_COMMAND_PORT move a test copy off the running app's ports.
+    static let statusPort = port("NJYT_STATUS_PORT", 47813)
+    static let commandPort = port("NJYT_COMMAND_PORT", 47814)
+
+    private static func port(_ name: String, _ fallback: UInt16) -> UInt16 {
+        ProcessInfo.processInfo.environment[name].flatMap(UInt16.init) ?? fallback
+    }
 
     var onCommand: ((String, Double?) -> Void)?
     private var socket: Int32 = -1

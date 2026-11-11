@@ -26,6 +26,25 @@
     return document.querySelector('video');
   }
 
+  function text(el, selector) {
+    const e = el.querySelector(selector);
+    return e ? (e.getAttribute('title') || e.textContent || '').trim() : '';
+  }
+
+  // The songs after the current one in the player's queue (up to 30). The current item is the
+  // selected one, or the one whose play button shows playing or paused.
+  function queue() {
+    const items = Array.from(document.querySelectorAll('ytmusic-player-queue ytmusic-player-queue-item'));
+    const at = items.findIndex(
+      (el) => el.hasAttribute('selected') || ['playing', 'paused', 'loading'].includes(el.getAttribute('play-button-state'))
+    );
+    if (at < 0) return [];
+    return items
+      .slice(at + 1, at + 31)
+      .map((el) => ({ title: text(el, '.song-title'), artist: text(el, '.byline'), dur: text(el, '.duration') }))
+      .filter((q) => q.title);
+  }
+
   nj.sample = () => {
     const v = video();
     const md = navigator.mediaSession && navigator.mediaSession.metadata;
@@ -44,6 +63,7 @@
       dur: v && isFinite(v.duration) ? Math.round(v.duration * 10) / 10 : 0,
       volume: v ? v.volume : 1,
       signedIn: !signedOut,
+      queue: queue(),
       page: location.host + location.pathname,
       err: nj.err,
     });

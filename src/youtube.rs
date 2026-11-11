@@ -16,6 +16,15 @@ pub const BUNDLE_ID: &str = "dev.mustafa.nightjar.youtube";
 /// No status for this long means the helper quit.
 const TIMEOUT: Duration = Duration::from_secs(3);
 
+/// One song after the current one in YouTube Music's queue.
+#[derive(Clone, Debug, Default, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct QueueItem {
+    pub title: String,
+    pub artist: String,
+    pub dur: String,
+}
+
 #[derive(Clone, Debug, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct Status {
@@ -31,6 +40,8 @@ pub struct Status {
     pub bins: Vec<f32>,
     pub wave: Vec<f32>,
     pub signed_in: bool,
+    /// What plays after the current song (up to 30), read from the page's queue.
+    pub queue: Vec<QueueItem>,
     pub tap: String,
 }
 
@@ -50,7 +61,12 @@ impl YouTube {
             .ok()
             .filter(|s| s.connect(("127.0.0.1", COMMAND_PORT)).is_ok());
         let (tx, rx) = channel();
-        if let Ok(sock) = UdpSocket::bind(("127.0.0.1", STATUS_PORT)) {
+        // Tests point a fake helper at another port so a running real helper can't mix in.
+        let port = std::env::var("NIGHTJAR_YT_STATUS_PORT")
+            .ok()
+            .and_then(|p| p.parse().ok())
+            .unwrap_or(STATUS_PORT);
+        if let Ok(sock) = UdpSocket::bind(("127.0.0.1", port)) {
             let _ = std::thread::Builder::new()
                 .name("nightjar-youtube".into())
                 .spawn(move || {
@@ -77,6 +93,18 @@ impl YouTube {
         }
     }
 
+    /// A link with no sockets that reports `status` as just received: headless scenes.
+    pub fn offline(status: Status) -> YouTube {
+        let (_tx, rx) = channel();
+        YouTube {
+            out: None,
+            rx,
+            last: Some(status),
+            last_at: Some(Instant::now()),
+            spectrum: None,
+        }
+    }
+
     /// Takes the newest status. Returns true when what the view shows changed (state, track,
     /// sign-in or tap), not for position or spectrum alone.
     pub fn poll(&mut self) -> bool {
@@ -90,6 +118,7 @@ impl YouTube {
                     || p.artist != status.artist
                     || p.signed_in != status.signed_in
                     || p.tap != status.tap
+                    || p.queue != status.queue
             });
             if !status.bins.is_empty() {
                 self.spectrum = Some((status.bins.clone(), status.wave.clone()));

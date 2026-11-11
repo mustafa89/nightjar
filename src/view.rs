@@ -49,6 +49,7 @@ pub fn view(s: &State, _cx: &mut Cx<State>) -> El {
         .gradient(c(k.bg[0]), c(k.bg[1]))
         // Any bare surface moves the window, as on a skinned player; controls keep their presses.
         .window_drag()
+        .children(backdrop(s))
         .child(left)
         .child(right)
         .on_drop_files(|s: &mut State, files, _tx| {
@@ -57,6 +58,23 @@ pub fn view(s: &State, _cx: &mut Cx<State>) -> El {
         })
         .accepts_files(|p| p.is_dir() || library::is_music(p))
         .on_drop_hover(|s: &mut State, over, _tx| s.drop_hover = over)
+}
+
+/// Modern layout only: the cover, blurred across the whole window behind everything, so the
+/// window takes the album's colours. `NIGHTJAR_BACKDROP=0` turns it off.
+fn backdrop(s: &State) -> Option<El> {
+    let image = s
+        .art
+        .as_ref()
+        .filter(|_| s.modern && std::env::var("NIGHTJAR_BACKDROP").as_deref() != Ok("0"))?;
+    Some(
+        el().key("backdrop")
+            .absolute(0.0, 0.0)
+            .pin(Some(0.0), Some(0.0), Some(0.0), Some(0.0))
+            .pixels_fit(image.pixels(), SurfaceFit::Fill)
+            .blur(60.0)
+            .opacity(0.45),
+    )
 }
 
 /// A raised card: skin face, bevelled edge and a soft drop shadow.
@@ -822,7 +840,8 @@ fn stage(s: &State, k: &'static Skin) -> El {
                 .key("viz")
                 .w_full()
                 .h_full()
-                .effect_data([s.viz as f32, playing, l.beat, 0.0]),
+                .effect_data([s.viz as f32, playing, l.beat, 0.0])
+                .live_offset(&s.tick),
         )
         .child(mode)
         .children(now)
@@ -944,7 +963,7 @@ fn art_box(s: &State, k: &'static Skin) -> El {
 fn up_next(s: &State, k: &'static Skin) -> El {
     let wrap = |inner: El| col().grow(1.0).h_full().min_w(0.0).child(inner);
     if s.source == Source::YouTube {
-        return wrap(youtube_card(s, k));
+        return wrap(youtube_up_next(s, k));
     }
     let next = s.up_next(200);
     let now_row = s.current.and_then(|i| s.tracks.get(i).map(|t| (i, t)));
@@ -1023,4 +1042,99 @@ fn up_next(s: &State, k: &'static Skin) -> El {
             .child(body)
             .child(footer),
     )
+}
+
+/// YouTube in the modern layout: its current song and queue, or its status card while there's
+/// no queue (window closed, signed out, nothing picked yet).
+fn youtube_up_next(s: &State, k: &'static Skin) -> El {
+    let Some(y) = s.yt().filter(|y| !y.queue.is_empty()) else {
+        return youtube_card(s, k);
+    };
+    let row_for = |key: String, title: &str, artist: &str, dur: &str, current: bool| {
+        let line = if artist.is_empty() {
+            title.to_string()
+        } else {
+            format!("{artist} — {title}")
+        };
+        row()
+            .key(key)
+            .w_full()
+            .h(28.0)
+            .px(8.0)
+            .gap(8.0)
+            .center_y()
+            .radius(7.0)
+            .fill(if current {
+                c(k.accent).alpha(0.14)
+            } else {
+                Color::TRANSPARENT
+            })
+            .child(
+                text(line)
+                    .font(ROW)
+                    .color(if current { c(k.accent) } else { c(k.text) })
+                    .truncate_fade()
+                    .grow(1.0)
+                    .min_w(0.0),
+            )
+            .child(text(dur.to_string()).font(ROW_MONO).color(c(k.muted)))
+    };
+    let body = col()
+        .key("yt-queue")
+        .w_full()
+        .grow(1.0)
+        .min_h(0.0)
+        .scroll(ScrollSpec {
+            stick_bottom: false,
+        })
+        .clip_soft(8.0)
+        .child(
+            text("NOW PLAYING")
+                .font(TINY)
+                .color(c(k.muted))
+                .px(8.0)
+                .pb(2.0),
+        )
+        .child(row_for("yt-now".into(), &y.title, &y.artist, "", true))
+        .child(
+            text("UP NEXT")
+                .font(TINY)
+                .color(c(k.muted))
+                .px(8.0)
+                .pt(10.0)
+                .pb(2.0),
+        )
+        .children(
+            y.queue
+                .iter()
+                .enumerate()
+                .map(|(i, q)| row_for(format!("yt-next-{i}"), &q.title, &q.artist, &q.dur, false)),
+        );
+    let show = small_button(k, "yt-show", &icons::RIGHT)
+        .help("Show YouTube Music")
+        .on_press(|s: &mut State| s.open_youtube());
+    card(k)
+        .key("upnext")
+        .w_full()
+        .grow(1.0)
+        .min_h(0.0)
+        .padding(12.0)
+        .pt(8.0)
+        .gap(6.0)
+        .child(
+            row()
+                .w_full()
+                .h(26.0)
+                .center_y()
+                .child(source_tabs(s, k))
+                .child(spacer())
+                .child(show),
+        )
+        .child(body)
+        .child(
+            text("Pick and reorder songs in the YouTube window")
+                .font(SMALL)
+                .color(c(k.muted))
+                .truncate_fade(),
+        )
 }

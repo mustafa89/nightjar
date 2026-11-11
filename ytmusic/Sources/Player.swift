@@ -16,6 +16,7 @@ final class Player: NSObject, NSWindowDelegate, WKNavigationDelegate, WKUIDelega
     let webView: WKWebView
     private let link: Link
     private let tap: AudioTap
+    private let tapEnabled: Bool
     /// Tap set-up can wait on the permission prompt; never on the main thread.
     private let tapQueue = DispatchQueue(label: "nightjar.youtube.tap")
     private var timer: Timer?
@@ -25,7 +26,8 @@ final class Player: NSObject, NSWindowDelegate, WKNavigationDelegate, WKUIDelega
 
     init(start: URL, silent: Bool) {
         let config = WKWebViewConfiguration()
-        config.websiteDataStore = .default() // persistent: sign in once
+        // Persistent, so you sign in once; test runs get a throwaway store and never touch it.
+        config.websiteDataStore = silent ? .nonPersistent() : .default()
         // Silent test runs never autoplay; their tap is muted as well.
         config.mediaTypesRequiringUserActionForPlayback = silent ? .all : []
         let scripts = config.userContentController
@@ -51,6 +53,8 @@ final class Player: NSObject, NSWindowDelegate, WKNavigationDelegate, WKUIDelega
 
         link = Link()
         tap = AudioTap(muted: silent)
+        // Silent test runs make no tap unless asked (NJYT_TAP=1): a tap asks for permission.
+        tapEnabled = !silent || ProcessInfo.processInfo.environment["NJYT_TAP"] == "1"
         super.init()
         window.delegate = self
         webView.navigationDelegate = self
@@ -59,7 +63,15 @@ final class Player: NSObject, NSWindowDelegate, WKNavigationDelegate, WKUIDelega
 
         // App Nap would slow the sampling timer while the window is hidden.
         activity = ProcessInfo.processInfo.beginActivity(options: .userInitiatedAllowingIdleSystemSleep, reason: "Reports playback to Nightjar")
-        webView.load(URLRequest(url: start))
+        if silent {
+            // A throwaway store has no consent choice yet: "reject all" (SOCS=CAI) skips the EU
+            // consent page, as answering it once would.
+            let consent = HTTPCookie(properties: [.domain: ".youtube.com", .path: "/", .name: "SOCS", .value: "CAI", .secure: true])!
+            let view = webView
+            config.websiteDataStore.httpCookieStore.setCookie(consent) { view.load(URLRequest(url: start)) }
+        } else {
+            webView.load(URLRequest(url: start))
+        }
 
         let timer = Timer(timeInterval: 1.0 / 30.0, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.sample() }
@@ -77,7 +89,7 @@ final class Player: NSObject, NSWindowDelegate, WKNavigationDelegate, WKUIDelega
     private func sample() {
         tick += 1
         // Once a second: follow WebKit's audio processes as they start and restart.
-        if tick % 30 == 0 { tapQueue.async { [tap] in tap.refresh() } }
+        if tapEnabled, tick % 30 == 0 { tapQueue.async { [tap] in tap.refresh() } }
         if lastState != "playing", tick % 15 != 0 { return }
         webView.evaluateJavaScript("window.__nj ? window.__nj.sample() : ''") { [weak self] result, _ in
             MainActor.assumeIsolated {

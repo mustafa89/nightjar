@@ -28,6 +28,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>LSMinimumSystemVersion</key><string>14.2</string>
     <key>NSAudioCaptureUsageDescription</key><string>Nightjar draws its spectrum and visualizer from the music this window plays.</string>
     <key>NSHighResolutionCapable</key><true/>
+    <key>LSUIElement</key><true/>
 </dict>
 </plist>
 PLIST

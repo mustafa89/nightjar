@@ -1,8 +1,12 @@
 import AppKit
 
-/// Nightjar YouTube: YouTube Music's own web player in a window, reporting to Nightjar.
-/// `--url <url>` opens another page first; `NJYT_SILENT=1` analyses audio but plays nothing aloud
-/// (for automated checks).
+/// Nightjar YouTube: YouTube Music's own web player in a window, reporting to Nightjar. A
+/// background app (no Dock icon, no menu bar): Nightjar and the notch open its window, and it
+/// quits when Nightjar quits.
+///
+/// Test aids: `--url <url>` opens another page first; `NJYT_SILENT=1` never autoplays and makes
+/// no audio tap (`NJYT_TAP=1` adds a muted one); `NJYT_HIDDEN=1` never shows the window;
+/// `NJYT_STATUS_PORT` / `NJYT_COMMAND_PORT` move it off the running app's ports.
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     var player: Player!
@@ -14,7 +18,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         player = Player(start: start, silent: silent)
         if let snap = ProcessInfo.processInfo.environment["NJYT_SNAP"] { player.snapshotEvery5s(to: snap) }
         NSApp.mainMenu = menu()
-        player.show()
+        installShortcuts()
+        quitWithNightjar()
+        if ProcessInfo.processInfo.environment["NJYT_HIDDEN"] != "1" { player.show() }
+    }
+
+    /// A background app shows no menu bar, so its shortcuts are handled here: editing keys for
+    /// the sign-in fields, and close, hide, reload and quit.
+    private func installShortcuts() {
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            let mods = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+            guard mods.contains(.command), let key = event.charactersIgnoringModifiers?.lowercased() else { return event }
+            let shift = mods.contains(.shift)
+            let action: Selector? = switch key {
+            case "x": #selector(NSText.cut(_:))
+            case "c": #selector(NSText.copy(_:))
+            case "v": #selector(NSText.paste(_:))
+            case "a": #selector(NSText.selectAll(_:))
+            case "z": shift ? Selector(("redo:")) : Selector(("undo:"))
+            case "w": #selector(NSWindow.performClose(_:))
+            case "h": #selector(NSApplication.hide(_:))
+            case "q": #selector(NSApplication.terminate(_:))
+            default: nil
+            }
+            if key == "r" {
+                MainActor.assumeIsolated { self.player.reload() }
+                return nil
+            }
+            guard let action else { return event }
+            return NSApp.sendAction(action, to: nil, from: nil) ? nil : event
+        }
+    }
+
+    /// The player belongs to Nightjar: when Nightjar quits, so does it.
+    private func quitWithNightjar() {
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didTerminateApplicationNotification, object: nil, queue: .main
+        ) { note in
+            let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            if app?.bundleIdentifier == "dev.mustafa.nightjar" { NSApp.terminate(nil) }
+        }
     }
 
     /// The Dock icon or a second launch shows the window again.
@@ -72,6 +115,6 @@ MainActor.assumeIsolated {
     let app = NSApplication.shared
     let delegate = AppDelegate()
     app.delegate = delegate
-    app.setActivationPolicy(.regular)
+    app.setActivationPolicy(.accessory)
     app.run()
 }

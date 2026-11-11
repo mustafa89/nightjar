@@ -13,7 +13,8 @@ scripts/install.sh                             # ~/Applications/Nightjar.app
 - **Deck**: a display with play state, a clock (click it for remaining time), title,
   artist · album, rate / channels / codec tags, and a 20-band spectrum with falling peak caps.
   Below it are the seek bar (drag to scrub), the transport buttons, shuffle, repeat
-  (off → playlist → track) and volume. Drag any bare surface (the gaps, the card faces or the
+  (off → playlist → track) and volume. Shuffle fixes a shuffled order when it's turned on, so
+  up next is always what plays. Drag any bare surface (the gaps, the card faces or the
   visualizer) to move the window.
 - **Playlist**: drop files or folders anywhere in the window, or use `+` (file) and the folder
   button. Click a row to select it; double-click or `↵` plays it. `⌫` removes the selected row,
@@ -28,7 +29,9 @@ scripts/install.sh                             # ~/Applications/Nightjar.app
 - **Modern layout** (the layout button in the header, or `M`): large album art with the live
   spectrum along its bottom edge, the title, a seek bar with times, and the transport; beside
   it, **Now playing** and **Up next** from the playlist (repeat-aware; with shuffle on it says
-  the next track is random). Art comes from the cover embedded in the file's tags, else a
+  the shuffled order with shuffle on). Behind it all, the cover is blurred across the window
+  (`NIGHTJAR_BACKDROP=0` turns that off). On YouTube, the right side shows YouTube Music's own
+  queue. Art comes from the cover embedded in the file's tags, else a
   `cover`/`folder`/`front` image in its folder, or YouTube's artwork. The layout has no shader
   stage, so it's the lighter of the two.
 
@@ -36,7 +39,8 @@ Formats: mp3, flac, wav, m4a/aac, ogg/vorbis.
 
 ## YouTube Music
 
-`ytmusic/` is a small Swift helper app, **Nightjar YouTube**. It plays music.youtube.com in a
+`ytmusic/` is a small Swift helper app, **Nightjar YouTube**: a background app with no Dock
+icon that quits when Nightjar quits. It plays music.youtube.com in a
 WebKit window with YouTube's own player, so you sign in, search and pick music there. Nightjar
 switches to it with the **Library | YouTube** tabs (or `Y`):
 
@@ -54,8 +58,9 @@ ytmusic/build.sh          # builds and installs ~/Applications/Nightjar YouTube.
 
 The helper talks to Nightjar over UDP on `127.0.0.1`: status JSON to port 47813, commands
 (`toggle`, `next`, `prev`, `show`, `seek <s>`, `volume <0..1>`) to port 47814. It is ad-hoc
-signed, so macOS asks for audio permission again after each rebuild. `NJYT_SILENT=1` starts it
-for automated checks: no autoplay, and a muted tap.
+signed, so macOS asks for audio permission again after each rebuild. Test aids (all off by
+default): `NJYT_SILENT=1` (no autoplay, no audio tap, a throwaway web session),
+`NJYT_HIDDEN=1` (no window), `NJYT_STATUS_PORT` / `NJYT_COMMAND_PORT` (other ports).
 
 ## Notch link
 
