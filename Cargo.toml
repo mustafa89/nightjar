@@ -3,13 +3,14 @@ name = "nightjar"
 version = "0.1.0"
 edition = "2024"
 description = "A skinnable music player with live visualizers, as a native Rune app"
+license = "MIT"
 
 [[bin]]
 name = "nightjar"
 path = "src/main.rs"
 
 [dependencies]
-# Rune is pre-release: pin a rev of `dev` (never rewritten). Same rev as jira-sessions-rune.
+# Rune is pre-release: pin a rev of `dev` (never rewritten).
 rune = { git = "https://github.com/anomalyco/rune", rev = "2a44156b21d63b0342a366b26d9222a6edd4622c", features = ["native-file-dialog"] }
 rune-theme-opencode = { git = "https://github.com/anomalyco/rune", rev = "2a44156b21d63b0342a366b26d9222a6edd4622c" }
 # The same wgpu as Rune, for the visualizer's own pipeline.

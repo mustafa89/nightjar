@@ -1,12 +1,33 @@
 # Nightjar
 
-A skinnable music player with live, music-driven visualizers, built with
-[Rune](https://github.com/anomalyco/rune) (GPU-rendered native UI in Rust).
+A skinnable music player for macOS with live, music-driven visualizers, built with
+[Rune](https://github.com/anomalyco/rune) (GPU-rendered native UI in Rust). It plays your own
+files, and YouTube Music through a built-in YouTube Music window.
+
+![The classic deck: display, spectrum, transport and playlist beside the visualizer stage](docs/classic.png)
+
+| Four shader visualizers | Four skins (they can cycle every 7 seconds) |
+|---|---|
+| ![Aurora Tunnel, Spectrum Halo, Scope Ribbon and Plasma Bloom](docs/visualizers.png) | ![Midnight Chrome, Ember Vinyl, Phosphor and Candy Pop](docs/skins.png) |
+
+![The modern layout: album art with the live spectrum, now playing and up next](docs/modern.png)
+
+## Requirements
+
+- macOS 14.2 or later on Apple silicon (the YouTube spectrum uses Core Audio process taps).
+- Rust 1.88 or later (edition 2024, let chains) and the Xcode Command Line Tools
+  (`xcode-select --install`) for `swiftc`.
+
+## Build and run
 
 ```sh
 cargo run --release -- ~/Music/some-album     # files or folders; the first plays
-scripts/install.sh                             # ~/Applications/Nightjar.app
+scripts/install.sh                             # builds and installs ~/Applications/Nightjar.app
 ```
+
+`scripts/install.sh` uses the bundle ID `dev.mustafa.nightjar`; set `NIGHTJAR_BUNDLE_ID` to
+use your own, and `MAC_APP_SIGN="<signing identity>"` to sign with a certificate (macOS then
+remembers the audio permission across rebuilds).
 
 ## Window
 
@@ -42,6 +63,10 @@ Formats: mp3, flac, wav, m4a/aac, ogg/vorbis.
 
 ## YouTube Music
 
+> Nightjar's YouTube Music window is an unofficial client. It isn't affiliated with, endorsed
+> by or connected to YouTube or Google. It loads music.youtube.com and plays it with YouTube's
+> own web player; it doesn't download or extract streams.
+
 The **Library | YouTube** tabs (or `Y`) switch Nightjar to YouTube Music. It plays in a
 YouTube Music window that Nightjar opens itself: music.youtube.com in WebKit with YouTube's own
 player, so you sign in, search and pick music there. Closing that window hides it, and the music
@@ -66,17 +91,19 @@ string. Ad-hoc signing makes macOS ask for the permission again after each insta
 a silent player (throwaway session, muted media, no tap) loads a song, waits for the queue and
 plays its third song.
 
-## Notch link
+## Notch link (optional companion)
 
-Nightjar talks to NotchSwitcher (`~/code/notch-switcher`) over UDP on `127.0.0.1` only:
+Nightjar publishes what it plays over UDP on `127.0.0.1`, so a companion app (a notch widget, a
+menu bar item, a stream overlay) can show and control it. Nothing listening is fine: the
+packets are dropped.
 
-- It sends a JSON status to port 47811: state, title, artist, position, length, the 20
-  spectrum bands and the skin's accents. It sends 30 times a second while playing and once a
-  second otherwise.
-- It accepts `toggle`, `next` or `prev` on port 47812.
+- Status, JSON, to port 47811: `state` (playing, paused, stopped), `title`, `artist`, `pos`,
+  `dur`, `bands` (20 spectrum levels, 0 to 1), and the skin's `accent`, `accent2` and `bars`
+  colours. 30 times a second while playing, once a second otherwise.
+- Commands, plain text, to port 47812: `toggle`, `next` or `prev`.
 
-The notch shows a Nightjar button with a now-playing panel, and a Live Activity while music
-plays. Without the notch app, the packets are dropped.
+[NotchSwitcher](https://github.com/mustafa89/notch-switcher) uses it for a now-playing panel and a
+Live Activity in the MacBook notch.
 
 ## How it works
 
