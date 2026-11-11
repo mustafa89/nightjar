@@ -102,7 +102,7 @@ packets are dropped.
   colours. 30 times a second while playing, once a second otherwise.
 - Commands, plain text, to port 47812: `toggle`, `next` or `prev`.
 
-[NotchSwitcher](https://github.com/mustafa89/notch-switcher) uses it for a now-playing panel and a
+[NotchSwitcher](https://github.com/mustafa89/macos-notch-app) uses it for a now-playing panel and a
 Live Activity in the MacBook notch.
 
 ## How it works
