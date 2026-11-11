@@ -1125,12 +1125,13 @@ fn youtube_up_next(s: &State, k: &'static Skin) -> El {
                 .pt(10.0)
                 .pb(2.0),
         )
-        .children(
-            y.queue
-                .iter()
-                .enumerate()
-                .map(|(i, q)| row_for(format!("yt-next-{i}"), &q.title, &q.artist, &q.dur, false)),
-        );
+        .children(y.queue.iter().enumerate().map(|(i, q)| {
+            row_for(format!("yt-next-{i}"), &q.title, &q.artist, &q.dur, false)
+                .hover(c(k.text).alpha(0.05))
+                .cursor(Cursor::Pointer)
+                .help("Play this song")
+                .on_press(move |s: &mut State| s.play_queue(i))
+        }));
     let show = small_button(k, "yt-show", &icons::RIGHT)
         .help("Show YouTube Music")
         .on_press(|s: &mut State| s.open_youtube());

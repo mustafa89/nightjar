@@ -31,6 +31,11 @@ final class Player: NSObject, NSWindowDelegate, WKNavigationDelegate, WKUIDelega
         // Silent test runs never autoplay; their tap is muted as well.
         config.mediaTypesRequiringUserActionForPlayback = silent ? .all : []
         let scripts = config.userContentController
+        if silent {
+            // Test runs: every media element is muted the moment it starts, before any audio.
+            let mute = "for (const e of ['loadstart', 'play', 'playing']) document.addEventListener(e, (ev) => { if (ev.target instanceof HTMLMediaElement) { ev.target.muted = true; ev.target.volume = 0; } }, true);"
+            scripts.addUserScript(WKUserScript(source: mute, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        }
         if let url = Bundle.main.url(forResource: "inject", withExtension: "js"), let js = try? String(contentsOf: url, encoding: .utf8) {
             scripts.addUserScript(WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         }
@@ -111,7 +116,7 @@ final class Player: NSObject, NSWindowDelegate, WKNavigationDelegate, WKUIDelega
 
     private func run(_ name: String, _ arg: Double?) {
         if name == "show" { return show() }
-        guard ["toggle", "next", "prev", "seek", "volume"].contains(name) else { return }
+        guard ["toggle", "next", "prev", "seek", "volume", "queue"].contains(name) else { return }
         let value = arg.map { String($0) } ?? "undefined"
         webView.evaluateJavaScript("window.__nj && window.__nj.cmd('\(name)', \(value))", completionHandler: nil)
         lastState = "playing" // sample at full rate until the page says otherwise

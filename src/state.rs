@@ -767,6 +767,11 @@ impl State {
         }
     }
 
+    /// Plays the `i`th song of YouTube's up-next queue (0 = the next one).
+    pub fn play_queue(&mut self, i: usize) {
+        self.yt_send(&format!("queue {i}"));
+    }
+
     pub fn toggle_source(&mut self) {
         self.set_source(match self.source {
             Source::Local => Source::YouTube,

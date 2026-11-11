@@ -368,6 +368,29 @@ mod tests {
     }
 
     #[test]
+    fn a_click_on_a_youtube_queue_song_sends_it_to_the_helper() {
+        unsafe { std::env::set_var("NIGHTJAR_CONFIG", "/nonexistent/nightjar/settings.json") };
+        let mut s = State::new();
+        youtube_queue(&mut s); // modern layout, a connected (offline) helper with three queued songs
+        let mut rt = Runtime::new(
+            s,
+            view::view,
+            (1040.0, 640.0),
+            Env {
+                system_dark: true,
+                scale: 2.0,
+            },
+        );
+        rt.frame(0.0);
+        assert!(rt.find("yt-next-2").is_some(), "the queue shows");
+        click(&mut rt, "yt-next-1");
+        assert_eq!(
+            rt.state.message, None,
+            "sent to the running helper; nothing tried to open it"
+        );
+    }
+
+    #[test]
     fn a_click_selects_a_track_without_playing_it() {
         let mut rt = deck_runtime();
         click(&mut rt, "track-4");

@@ -33,11 +33,16 @@
 
   // The songs after the current one in the player's queue (up to 30). The current item is the
   // selected one, or the one whose play button shows playing or paused.
-  function queue() {
+  function queueItems() {
     const items = Array.from(document.querySelectorAll('ytmusic-player-queue ytmusic-player-queue-item'));
     const at = items.findIndex(
       (el) => el.hasAttribute('selected') || ['playing', 'paused', 'loading'].includes(el.getAttribute('play-button-state'))
     );
+    return { items, at };
+  }
+
+  function queue() {
+    const { items, at } = queueItems();
     if (at < 0) return [];
     return items
       .slice(at + 1, at + 31)
@@ -93,6 +98,16 @@
       case 'seek':
         if (v && isFinite(arg)) v.currentTime = Math.max(0, arg);
         return;
+      case 'queue': {
+        // The nth song after the current one, as queue() lists them: its own play button,
+        // so YouTube plays it as a click in its window would.
+        const { items, at } = queueItems();
+        const el = at >= 0 && isFinite(arg) ? items[at + 1 + arg] : null;
+        if (!el) return;
+        const button = el.querySelector('ytmusic-play-button-renderer') || el.querySelector('.song-title') || el;
+        button.click();
+        return;
+      }
       case 'volume':
         if (v && isFinite(arg)) v.volume = Math.min(1, Math.max(0, arg));
         return;
