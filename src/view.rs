@@ -121,6 +121,27 @@ fn header(s: &State, k: &'static Skin, inset: f32) -> El {
                 .on_press(|s: &mut State| s.toggle_layout()),
         )
         .child(
+            // Lit while skins change by themselves every 7 seconds.
+            el().key("skin-cycle")
+                .size(22.0, 22.0)
+                .radius(11.0)
+                .center()
+                .fill(c(k.accent).alpha(if s.skin_cycle { 0.28 } else { 0.08 }))
+                .hover(c(k.accent).alpha(0.22))
+                .cursor(Cursor::Pointer)
+                .child(rune::icon(&icons::CYCLE, 12.0).color(if s.skin_cycle {
+                    c(k.accent)
+                } else {
+                    c(k.muted)
+                }))
+                .help(if s.skin_cycle {
+                    "Skins cycle every 7 s: click to stop"
+                } else {
+                    "Cycle skins every 7 s"
+                })
+                .on_press(|s: &mut State| s.toggle_skin_cycle()),
+        )
+        .child(
             row()
                 .key("skin")
                 .h(22.0)

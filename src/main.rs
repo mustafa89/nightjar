@@ -344,6 +344,30 @@ mod tests {
     }
 
     #[test]
+    fn skins_cycle_every_seven_seconds_until_the_toggle_stops_them() {
+        let mut rt = deck_runtime();
+        rt.state.skin_cycle = true;
+        let start = rt.state.skin;
+        let next = (start + 1) % skin::SKINS.len();
+        // Poll at chosen app-clock times (seconds).
+        let poll_at = |rt: &mut Runtime<State>, t: f64| {
+            rt.update(|s, tx| {
+                s.poll(t, tx);
+            })
+        };
+        poll_at(&mut rt, 1.0);
+        poll_at(&mut rt, 7.9);
+        assert_eq!(rt.state.skin, start, "not before 7 s");
+        poll_at(&mut rt, 8.1);
+        assert_eq!(rt.state.skin, next, "the next skin after 7 s");
+        click(&mut rt, "skin-cycle");
+        assert!(!rt.state.skin_cycle);
+        poll_at(&mut rt, 9.0);
+        poll_at(&mut rt, 30.0);
+        assert_eq!(rt.state.skin, next, "stays once stopped");
+    }
+
+    #[test]
     fn a_click_selects_a_track_without_playing_it() {
         let mut rt = deck_runtime();
         click(&mut rt, "track-4");

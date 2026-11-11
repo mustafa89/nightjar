@@ -20,6 +20,9 @@ pub const BAR_H: f32 = 44.0;
 /// Seek track width is the deck's inner width; the view reports it on layout.
 pub const SEEK_W: f32 = 348.0;
 
+/// Seconds between automatic skin changes.
+pub const SKIN_CYCLE_SECS: f64 = 7.0;
+
 pub const VIZ_MODES: &[&str] = &[
     "Aurora Tunnel",
     "Spectrum Halo",
@@ -85,6 +88,10 @@ pub struct State {
     pub source: Source,
     /// The modern layout: album art and up next instead of the classic deck.
     pub modern: bool,
+    /// Skins change by themselves every SKIN_CYCLE_SECS.
+    pub skin_cycle: bool,
+    /// App-clock time of the last skin change (0 = start counting at the next poll).
+    skin_at: f64,
     /// Cover of what's playing (or selected); None shows the placeholder.
     pub art: Option<rune::Image>,
     pub message: Option<String>,
@@ -144,6 +151,8 @@ impl State {
                 Source::Local
             },
             modern: s.modern,
+            skin_cycle: s.skin_cycle,
+            skin_at: 0.0,
             art: None,
             message: None,
             drop_hover: false,
@@ -361,6 +370,7 @@ impl State {
             repeat: self.repeat.code(),
             source: (self.source == Source::YouTube) as u8,
             modern: self.modern,
+            skin_cycle: self.skin_cycle,
             playlist: self.tracks.iter().map(|t| t.path.clone()).collect(),
         });
     }
@@ -793,8 +803,42 @@ impl State {
         // Every colour glides to the new skin.
         tx.color_motion(rune::Spring::new(0.45, 0.0));
         self.skin = (self.skin as isize + d).rem_euclid(SKINS.len() as isize) as usize;
+        // A skin picked by hand stays its full turn before the cycle moves on.
+        self.skin_at = 0.0;
         self.say(format!("Skin: {}", SKINS[self.skin].name));
         self.save();
+    }
+
+    pub fn toggle_skin_cycle(&mut self) {
+        self.skin_cycle = !self.skin_cycle;
+        self.skin_at = 0.0;
+        self.say(if self.skin_cycle {
+            "Skins cycle every 7 seconds"
+        } else {
+            "Skin cycle off"
+        });
+        self.save();
+    }
+
+    /// The automatic step: a slower fade, no message, and no settings write every 7 seconds.
+    fn auto_skin(&mut self, t: f64, tx: &mut Tx) -> bool {
+        if !self.skin_cycle {
+            return false;
+        }
+        if self.skin_at == 0.0 {
+            self.skin_at = t;
+        }
+        let due = self.skin_at + SKIN_CYCLE_SECS;
+        let changed = t >= due;
+        if changed {
+            tx.color_motion(rune::Spring::new(1.1, 0.0));
+            self.skin = (self.skin + 1) % SKINS.len();
+            self.skin_at = t;
+        }
+        tx.wake_after(Duration::from_secs_f64(
+            (self.skin_at + SKIN_CYCLE_SECS - t).max(0.05),
+        ));
+        changed
     }
 
     pub fn cycle_viz(&mut self, d: isize) {
@@ -847,6 +891,7 @@ impl State {
             changed |= y.poll();
         }
         changed |= self.update_art();
+        changed |= self.auto_skin(t, tx);
 
         if self.play == Play::Playing && self.engine.as_ref().is_some_and(|e| e.finished()) {
             match (self.repeat, self.current) {

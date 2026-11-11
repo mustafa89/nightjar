@@ -102,3 +102,8 @@ icon!(
     "nj-note",
     r#"<path d="M6.25 11.5V3.75L12.5 2.5V10.25" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" fill="none"/><circle cx="4.75" cy="11.5" r="1.75" fill="currentColor"/><circle cx="11" cy="10.25" r="1.75" fill="currentColor"/>"#
 );
+icon!(
+    CYCLE,
+    "nj-cycle",
+    r#"<path d="M12.75 6.5A5 5 0 0 0 3.6 5.25M3.25 9.5A5 5 0 0 0 12.4 10.75" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M3.25 2.75V5.5H6M12.75 13.25V10.5H10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>"#
+);

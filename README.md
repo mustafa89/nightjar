@@ -35,6 +35,9 @@ scripts/install.sh                             # ~/Applications/Nightjar.app
   `cover`/`folder`/`front` image in its folder, or YouTube's artwork. The layout has no shader
   stage, so it's the lighter of the two.
 
+- **Skin cycle**: every 7 seconds the skin fades to the next one, in a loop. The loop button
+  in the header turns it off (and on); a skin picked by hand stays its full 7 seconds.
+
 Formats: mp3, flac, wav, m4a/aac, ogg/vorbis.
 
 ## YouTube Music

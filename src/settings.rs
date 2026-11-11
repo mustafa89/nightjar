@@ -16,6 +16,8 @@ pub struct Settings {
     pub source: u8,
     /// The modern layout (album art and up next) instead of the classic deck.
     pub modern: bool,
+    /// Move to the next skin every few seconds, in a loop.
+    pub skin_cycle: bool,
     pub playlist: Vec<PathBuf>,
 }
 
@@ -29,6 +31,7 @@ impl Default for Settings {
             repeat: 0,
             source: 0,
             modern: false,
+            skin_cycle: true,
             playlist: Vec::new(),
         }
     }
