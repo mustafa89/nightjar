@@ -1,0 +1,25 @@
+[package]
+name = "nightjar"
+version = "0.1.0"
+edition = "2024"
+description = "A skinnable music player with live visualizers, as a native Rune app"
+
+[[bin]]
+name = "nightjar"
+path = "src/main.rs"
+
+[dependencies]
+# Rune is pre-release: pin a rev of `dev` (never rewritten). Same rev as jira-sessions-rune.
+rune = { git = "https://github.com/anomalyco/rune", rev = "2a44156b21d63b0342a366b26d9222a6edd4622c", features = ["native-file-dialog"] }
+rune-theme-opencode = { git = "https://github.com/anomalyco/rune", rev = "2a44156b21d63b0342a366b26d9222a6edd4622c" }
+# The same wgpu as Rune, for the visualizer's own pipeline.
+wgpu = { version = "~30.0.1", default-features = false, features = ["std", "parking_lot", "metal", "wgsl"] }
+rodio = { version = "0.23", default-features = false, features = ["playback", "flac", "mp3", "mp4", "vorbis", "wav"] }
+rustfft = "6.4"
+# Tags and stream parameters; the same symphonia rodio decodes with.
+symphonia = { version = "0.5", features = ["mp3", "isomp4", "aac"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+debug = false
