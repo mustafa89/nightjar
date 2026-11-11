@@ -1,6 +1,7 @@
 //! App state and every player action. The view reads it; handlers and `poll` change it.
 
 use crate::analysis::{Analyzer, BANDS, Levels};
+use crate::art::{self, ArtStore};
 use crate::audio::{Engine, Scope, StreamInfo};
 use crate::bridge::{Bridge, Command};
 use crate::library::{self, MetaReader, Track};
@@ -82,6 +83,10 @@ pub struct State {
     pub skin: usize,
     pub viz: usize,
     pub source: Source,
+    /// The modern layout: album art and up next instead of the classic deck.
+    pub modern: bool,
+    /// Cover of what's playing (or selected); None shows the placeholder.
+    pub art: Option<rune::Image>,
     pub message: Option<String>,
     pub drop_hover: bool,
     /// While the seek knob is held: the fraction it sits at.
@@ -97,6 +102,8 @@ pub struct State {
     reader: Option<MetaReader>,
     bridge: Option<Bridge>,
     youtube: Option<YouTube>,
+    arts: Option<ArtStore>,
+    art_source: Option<art::Source>,
     /// When the notch app last got a status, and what it said, to resend on any change.
     sent_at: Option<std::time::Instant>,
     sent_key: String,
@@ -130,6 +137,8 @@ impl State {
             } else {
                 Source::Local
             },
+            modern: s.modern,
+            art: None,
             message: None,
             drop_hover: false,
             scrub: None,
@@ -141,6 +150,8 @@ impl State {
             reader: None,
             bridge: None,
             youtube: None,
+            arts: None,
+            art_source: None,
             sent_at: None,
             sent_key: String::new(),
             last_t: 0.0,
@@ -176,6 +187,7 @@ impl State {
     pub fn start(&mut self, waker: rune::Waker) {
         self.bridge = Some(Bridge::start(Some(waker.clone())));
         self.youtube = Some(YouTube::start(Some(waker.clone())));
+        self.arts = Some(ArtStore::new(waker.clone()));
         let reader = MetaReader::spawn(Some(waker));
         for t in &self.tracks {
             reader.request(t.path.clone());
@@ -337,6 +349,7 @@ impl State {
             shuffle: self.shuffle,
             repeat: self.repeat.code(),
             source: (self.source == Source::YouTube) as u8,
+            modern: self.modern,
             playlist: self.tracks.iter().map(|t| t.path.clone()).collect(),
         });
     }
@@ -620,6 +633,87 @@ impl State {
         self.save();
     }
 
+    pub fn toggle_layout(&mut self) {
+        self.modern = !self.modern;
+        self.save();
+    }
+
+    // ── Modern layout ────────────────────────────────────────────────────────
+
+    /// Where the cover of what's playing (or selected) comes from.
+    fn art_source_now(&self) -> Option<art::Source> {
+        match self.source {
+            Source::YouTube => self
+                .yt()
+                .map(|y| y.art.clone())
+                .filter(|u| !u.is_empty())
+                .map(art::Source::Remote),
+            Source::Local => self
+                .current_track()
+                .or_else(|| self.selected.and_then(|i| self.tracks.get(i)))
+                .map(|t| art::Source::Local(t.path.clone())),
+        }
+    }
+
+    /// Follows the cover to the current track. While the next cover loads the last one stays,
+    /// so tracks of one album don't flash the placeholder. Returns true when it changed.
+    fn update_art(&mut self) -> bool {
+        let source = self.art_source_now();
+        let Some(arts) = self.arts.as_mut() else {
+            return false;
+        };
+        let arrived = arts.poll();
+        if source == self.art_source && !arrived {
+            return false;
+        }
+        self.art_source = source.clone();
+        let before = self.art.as_ref().map(|i| i.id());
+        match source.map(|s| arts.get(&s)) {
+            None => self.art = None,
+            Some(None) => {} // still looking
+            Some(Some(found)) => self.art = found,
+        }
+        before != self.art.as_ref().map(|i| i.id())
+    }
+
+    /// Up to `n` playlist rows after the current track (from the selection when nothing is
+    /// loaded), wrapping when the playlist repeats; the track itself when it repeats.
+    pub fn up_next(&self, n: usize) -> Vec<usize> {
+        let len = self.tracks.len();
+        let Some(cur) = self.current else {
+            let start = self.selected.unwrap_or(0).min(len);
+            return (start..len).take(n).collect();
+        };
+        if self.repeat == Repeat::One {
+            return vec![cur];
+        }
+        let mut out = Vec::new();
+        let mut i = cur;
+        while out.len() < n {
+            i += 1;
+            if i >= len {
+                if self.repeat != Repeat::All || len == 0 {
+                    break;
+                }
+                i = 0;
+            }
+            if i == cur {
+                break;
+            }
+            out.push(i);
+        }
+        out
+    }
+
+    /// Why the up-next list isn't the whole story, when it isn't.
+    pub fn up_next_note(&self) -> Option<&'static str> {
+        match (self.shuffle, self.repeat) {
+            (true, _) => Some("Shuffle is on: the next track is picked at random"),
+            (false, Repeat::One) => Some("Repeating this track"),
+            _ => None,
+        }
+    }
+
     pub fn toggle_source(&mut self) {
         self.set_source(match self.source {
             Source::Local => Source::YouTube,
@@ -708,6 +802,7 @@ impl State {
         if let Some(y) = &mut self.youtube {
             changed |= y.poll();
         }
+        changed |= self.update_art();
 
         if self.play == Play::Playing && self.engine.as_ref().is_some_and(|e| e.finished()) {
             match (self.repeat, self.current) {

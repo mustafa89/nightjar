@@ -23,6 +23,8 @@ pub struct Status {
     pub title: String,
     pub artist: String,
     pub album: String,
+    /// Artwork URL from the page's media session (largest size).
+    pub art: String,
     pub pos: f64,
     pub dur: f64,
     pub volume: f32,

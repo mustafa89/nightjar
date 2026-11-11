@@ -25,6 +25,13 @@ scripts/install.sh                             # ~/Applications/Nightjar.app
 - **Skins**: Midnight Chrome, Ember Vinyl, Phosphor and Candy Pop. Each skin sets the colours of
   every surface and the visualizer palette, and switching skins fades every colour on a spring.
 
+- **Modern layout** (the layout button in the header, or `M`): large album art with the live
+  spectrum along its bottom edge, the title, a seek bar with times, and the transport; beside
+  it, **Now playing** and **Up next** from the playlist (repeat-aware; with shuffle on it says
+  the next track is random). Art comes from the cover embedded in the file's tags, else a
+  `cover`/`folder`/`front` image in its folder, or YouTube's artwork. The layout has no shader
+  stage, so it's the lighter of the two.
+
 Formats: mp3, flac, wav, m4a/aac, ogg/vorbis.
 
 ## YouTube Music
@@ -72,6 +79,7 @@ plays. Without the notch app, the packets are dropped.
 | `src/viz.rs` | A Rune `Compositor`. It draws the UI with `Renderer::draw_with` and paints one WGSL shader into the stage's `El::effect` slot. A uniform buffer feeds the shader the levels and the skin palette. |
 | `src/bridge.rs` | The notch link: status out, commands in. |
 | `src/youtube.rs` | The YouTube Music source: helper status in, commands out. |
+| `src/art.rs` | Album art: embedded covers, cover files and YouTube artwork, fetched on a worker and decoded by Rune's image cache. |
 | `src/library.rs` | Folder scans, plus tags and durations read by symphonia on a background thread. |
 | `src/skin.rs`, `src/view.rs`, `src/icons.rs` | Skins, layout and icons. |
 
@@ -91,6 +99,7 @@ plays. Without the notch app, the packets are dropped.
 | `k` / `K` | next / previous skin |
 | `v` / `V` | next / previous visualizer |
 | `y` | switch source: library ↔ YouTube Music |
+| `m` | switch layout: classic deck ↔ modern |
 | `⌫` | remove the selected track |
 | `q` | quit |
 
@@ -99,7 +108,7 @@ plays. Without the notch app, the packets are dropped.
 ```sh
 cargo test --release                       # analyser and headless UI tests
 cargo test --release -- --ignored          # real playback through the output device, at volume 0
-target/release/nightjar --snap out/deck.png --scene deck        # also: empty, skin1-3, viz1-3
+target/release/nightjar --snap out/deck.png --scene deck        # also: empty, skin1-3, viz1-3, youtube, modern, modern-noart
 ```
 
 Snapshot scenes use sample tracks and made-up levels. They need no music files and no audio

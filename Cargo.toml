@@ -19,6 +19,8 @@ rustfft = "6.4"
 # Tags and stream parameters; the same symphonia rodio decodes with.
 symphonia = { version = "0.5", features = ["mp3", "isomp4", "aac"] }
 serde = { version = "1", features = ["derive"] }
+# Album art from the YouTube helper's artwork URL.
+ureq = "2"
 serde_json = "1"
 
 [profile.release]

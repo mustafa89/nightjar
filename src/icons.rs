@@ -92,3 +92,13 @@ icon!(
     "nj-skin",
     r#"<path d="M8 2.5A5.5 5.5 0 1 0 8 13.5C9 13.5 9.25 12.75 8.75 12.1C8.25 11.45 8.6 10.5 9.5 10.5H11A2.5 2.5 0 0 0 13.5 8A5.5 5.5 0 0 0 8 2.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" fill="none"/><circle cx="5.25" cy="7.5" r="0.9" fill="currentColor"/><circle cx="7.5" cy="5" r="0.9" fill="currentColor"/><circle cx="10.5" cy="5.75" r="0.9" fill="currentColor"/>"#
 );
+icon!(
+    LAYOUT,
+    "nj-layout",
+    r#"<rect x="2.75" y="3.25" width="10.5" height="9.5" rx="1.5" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M7.25 3.25V12.75M7.25 7.5H13.25" stroke="currentColor" stroke-width="1.2"/>"#
+);
+icon!(
+    NOTE,
+    "nj-note",
+    r#"<path d="M6.25 11.5V3.75L12.5 2.5V10.25" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" fill="none"/><circle cx="4.75" cy="11.5" r="1.75" fill="currentColor"/><circle cx="11" cy="10.25" r="1.75" fill="currentColor"/>"#
+);

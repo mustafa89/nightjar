@@ -14,6 +14,8 @@ pub struct Settings {
     pub repeat: u8,
     /// 0 = local files, 1 = YouTube Music.
     pub source: u8,
+    /// The modern layout (album art and up next) instead of the classic deck.
+    pub modern: bool,
     pub playlist: Vec<PathBuf>,
 }
 
@@ -26,6 +28,7 @@ impl Default for Settings {
             shuffle: false,
             repeat: 0,
             source: 0,
+            modern: false,
             playlist: Vec::new(),
         }
     }

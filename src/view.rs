@@ -9,8 +9,8 @@ use crate::state::{BAR_GAP, BAR_H, BAR_W, Play, Repeat, SEEK_W, Source, State, V
 use crate::viz::VIZ_MARK;
 use rune::tok::TextStyle;
 use rune::{
-    Color, Cursor, Cx, Drag, El, FileDialogOptions, Icon, Phase, ScrollSpec, Shadow, Tx, col, el,
-    row, spacer, text,
+    Color, Cursor, Cx, Drag, El, FileDialogOptions, Icon, Phase, ScrollSpec, Shadow, SurfaceFit,
+    Tx, col, el, row, spacer, text,
 };
 
 pub const DECK_W: f32 = 376.0;
@@ -29,12 +29,17 @@ const STAGE_TITLE: TextStyle = TextStyle::new(26.0, 750.0);
 
 pub fn view(s: &State, _cx: &mut Cx<State>) -> El {
     let k = skin(s.skin);
-    let left = col()
-        .w(DECK_W)
-        .h_full()
-        .gap(12.0)
-        .child(deck(s, k))
-        .child(playlist(s, k));
+    let (left, right) = if s.modern {
+        (modern_left(s, k), up_next(s, k))
+    } else {
+        let left = col()
+            .w(DECK_W)
+            .h_full()
+            .gap(12.0)
+            .child(deck(s, k))
+            .child(playlist(s, k));
+        (left, stage(s, k))
+    };
     row()
         .key("root")
         .w_full()
@@ -45,7 +50,7 @@ pub fn view(s: &State, _cx: &mut Cx<State>) -> El {
         // Any bare surface moves the window, as on a skinned player; controls keep their presses.
         .window_drag()
         .child(left)
-        .child(stage(s, k))
+        .child(right)
         .on_drop_files(|s: &mut State, files, _tx| {
             s.drop_hover = false;
             s.add_paths(files);
@@ -70,15 +75,33 @@ fn card(k: &Skin) -> El {
         })
 }
 
-fn deck(s: &State, k: &'static Skin) -> El {
-    // The traffic lights sit at the deck's top-left (window x 28 to about 86); the wordmark clears them.
-    let header = row()
+/// Wordmark, layout switch and skin chip. `inset` is the room the traffic lights take from
+/// the header's left edge (window x 28 to about 86, plus a 12 pt gap).
+fn header(s: &State, k: &'static Skin, inset: f32) -> El {
+    row()
+        .w_full()
         .h(22.0)
-        .pl(LIGHTS_CLEAR)
+        .pl(inset)
         .center_y()
-        .gap(8.0)
+        .gap(6.0)
         .child(text("NIGHTJAR").font(WORDMARK).color(c(k.accent)))
         .child(spacer())
+        .child(
+            el().key("layout")
+                .size(22.0, 22.0)
+                .radius(11.0)
+                .center()
+                .fill(c(k.accent).alpha(0.12))
+                .hover(c(k.accent).alpha(0.22))
+                .cursor(Cursor::Pointer)
+                .child(rune::icon(&icons::LAYOUT, 12.0).color(c(k.accent)))
+                .help(if s.modern {
+                    "Classic deck (M)"
+                } else {
+                    "Modern layout (M)"
+                })
+                .on_press(|s: &mut State| s.toggle_layout()),
+        )
         .child(
             row()
                 .key("skin")
@@ -95,14 +118,17 @@ fn deck(s: &State, k: &'static Skin) -> El {
                 .child(text(k.name).font(SMALL).color(c(k.text)))
                 .help("Next skin (K)")
                 .on_press_tx(|s: &mut State, tx: &mut Tx| s.cycle_skin(1, tx)),
-        );
+        )
+}
+
+fn deck(s: &State, k: &'static Skin) -> El {
     card(k)
         .key("deck")
         .w_full()
         .padding(PAD)
         .pt(10.0)
         .gap(12.0)
-        .child(header)
+        .child(header(s, k, LIGHTS_CLEAR))
         .child(display(s, k))
         .child(seek(s, k))
         .child(transport(s, k))
@@ -800,4 +826,201 @@ fn stage(s: &State, k: &'static Skin) -> El {
         )
         .child(mode)
         .children(now)
+}
+
+// ── Modern layout ────────────────────────────────────────────────────────────
+
+const MODERN_TITLE: TextStyle = TextStyle::new(20.0, 700.0);
+const TIME: TextStyle = TextStyle::new(11.0, 500.0).mono().features("'tnum' 1");
+
+/// Album art over the title, the seek bar with times, and the transport: no card, straight on
+/// the window, as music apps do.
+fn modern_left(s: &State, k: &'static Skin) -> El {
+    let n = s.now();
+    let sub = [n.artist.as_str(), n.album.as_str()]
+        .iter()
+        .filter(|x| !x.is_empty())
+        .copied()
+        .collect::<Vec<_>>()
+        .join(" · ");
+    let length = s
+        .duration()
+        .map(library::clock)
+        .unwrap_or_else(|| "--:--".into());
+    col()
+        .key("modern")
+        .w(DECK_W)
+        .h_full()
+        .pt(10.0)
+        .gap(12.0)
+        // The column starts at the window padding, so the header clears the lights by that much more.
+        .child(row().w_full().px(PAD).child(header(s, k, LIGHTS_CLEAR)))
+        .child(
+            row()
+                .w_full()
+                .grow(1.0)
+                .min_h(0.0)
+                .justify_center()
+                .items_center()
+                .child(art_box(s, k)),
+        )
+        .child(
+            col()
+                .w_full()
+                .px(PAD)
+                .gap(3.0)
+                .child(
+                    text(n.title)
+                        .key("modern-title")
+                        .font(MODERN_TITLE)
+                        .color(c(k.text))
+                        .truncate_fade(),
+                )
+                .child(
+                    text(if sub.is_empty() { " ".into() } else { sub })
+                        .font(SMALL)
+                        .color(c(k.muted))
+                        .truncate_fade(),
+                ),
+        )
+        .child(
+            col().w_full().px(PAD).gap(4.0).child(seek(s, k)).child(
+                row()
+                    .w_full()
+                    .child(
+                        text("00:00")
+                            .live_text(&s.clock)
+                            .font(TIME)
+                            .color(c(k.muted)),
+                    )
+                    .child(spacer())
+                    .child(text(length).font(TIME).color(c(k.muted))),
+            ),
+        )
+        .child(row().w_full().px(PAD).child(transport(s, k)))
+}
+
+/// The cover, square and as large as the column allows, with the live spectrum along its
+/// bottom edge. Without art: the skin's accents and a note.
+fn art_box(s: &State, k: &'static Skin) -> El {
+    let face = match &s.art {
+        Some(image) => el()
+            .w_full()
+            .h_full()
+            .pixels_fit(image.pixels(), SurfaceFit::Fill),
+        None => el()
+            .w_full()
+            .h_full()
+            .center()
+            .linear_gradient(135.0, [(0.0, c(k.accent2)), (1.0, c(k.accent))])
+            .child(rune::icon(&icons::NOTE, 96.0).color(Color::WHITE.alpha(0.85))),
+    };
+    let fade = col()
+        .absolute(0.0, 0.0)
+        .pin(Some(0.0), None, Some(0.0), Some(0.0))
+        .h(BAR_H + 28.0)
+        .pb(12.0)
+        .justify_end()
+        .gradient(Color::TRANSPARENT, Color::BLACK.alpha(0.55))
+        .child(spectrum(s, k));
+    el().key("art")
+        .aspect_fit(1.0)
+        .max_w(DECK_W - 2.0 * PAD)
+        .radius(18.0)
+        .clip_rounded(18.0)
+        .box_shadow(Shadow {
+            x: 0.0,
+            y: 14.0,
+            blur: 36.0,
+            spread: -8.0,
+            color: Color::BLACK.alpha(if k.dark { 0.6 } else { 0.25 }),
+            inset: false,
+        })
+        .child(face)
+        .child(fade)
+}
+
+/// The tracks that play next, in a card beside the art; YouTube's card in YouTube mode.
+fn up_next(s: &State, k: &'static Skin) -> El {
+    let wrap = |inner: El| col().grow(1.0).h_full().min_w(0.0).child(inner);
+    if s.source == Source::YouTube {
+        return wrap(youtube_card(s, k));
+    }
+    let next = s.up_next(200);
+    let now_row = s.current.and_then(|i| s.tracks.get(i).map(|t| (i, t)));
+    let mut body = col()
+        .key("upnext-rows")
+        .w_full()
+        .grow(1.0)
+        .min_h(0.0)
+        .scroll(ScrollSpec {
+            stick_bottom: false,
+        })
+        .clip_soft(8.0);
+    if let Some((i, t)) = now_row {
+        body = body
+            .child(
+                text("NOW PLAYING")
+                    .font(TINY)
+                    .color(c(k.muted))
+                    .px(8.0)
+                    .pb(2.0),
+            )
+            .child(track_row(s, k, i, t))
+            .child(
+                text("UP NEXT")
+                    .font(TINY)
+                    .color(c(k.muted))
+                    .px(8.0)
+                    .pt(10.0)
+                    .pb(2.0),
+            );
+    }
+    if let Some(note) = s.up_next_note() {
+        body = body.child(text(note).font(SMALL).color(c(k.accent2)).px(8.0).pb(4.0));
+    }
+    body = body.children(next.iter().map(|&i| track_row(s, k, i, &s.tracks[i])));
+    if s.tracks.is_empty() {
+        body = col()
+            .w_full()
+            .grow(1.0)
+            .center()
+            .gap(6.0)
+            .child(rune::icon(&icons::FOLDER, 28.0).color(c(k.muted).alpha(0.6)))
+            .child(
+                text("Drop files or folders anywhere")
+                    .font(SMALL)
+                    .color(c(k.muted)),
+            );
+    } else if next.is_empty() && s.up_next_note().is_none() {
+        body = body.child(
+            text("End of the playlist")
+                .font(SMALL)
+                .color(c(k.muted))
+                .px(8.0)
+                .pt(4.0),
+        );
+    }
+    let footer = text(
+        s.message
+            .clone()
+            .unwrap_or_else(|| "M classic deck · Space play · N next".into()),
+    )
+    .key("status")
+    .font(SMALL)
+    .color(c(k.muted))
+    .truncate_fade();
+    wrap(
+        card(k)
+            .key("upnext")
+            .w_full()
+            .grow(1.0)
+            .min_h(0.0)
+            .padding(12.0)
+            .pt(8.0)
+            .gap(6.0)
+            .child(row().w_full().h(26.0).center_y().child(source_tabs(s, k)))
+            .child(body)
+            .child(footer),
+    )
 }

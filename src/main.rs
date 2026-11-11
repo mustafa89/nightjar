@@ -5,6 +5,7 @@
 //! with made-up levels and no audio device.
 
 mod analysis;
+mod art;
 mod audio;
 mod bridge;
 mod icons;
@@ -55,6 +56,7 @@ fn on_key(s: &mut State, ev: &KeyEvent, tx: &mut Tx) -> bool {
             "V" => s.cycle_viz(-1),
             "j" => s.move_selection(1),
             "y" => s.toggle_source(),
+            "m" => s.toggle_layout(),
             "q" => tx.quit(),
             _ => return false,
         },
@@ -126,6 +128,35 @@ variant!(viz1, viz, 1);
 variant!(viz2, viz, 2);
 variant!(viz3, viz, 3);
 
+/// The modern layout with a stand-in cover (a diagonal gradient).
+fn modern(s: &mut State) {
+    deck(s);
+    s.modern = true;
+    let store = art::ArtStore::new(std::sync::Arc::new(|| {}));
+    let n = 256usize;
+    let mut px = Vec::with_capacity(n * n * 4);
+    for y in 0..n {
+        for x in 0..n {
+            let t = (x + y) as f32 / (2 * n) as f32;
+            px.extend_from_slice(&[
+                (255.0 * (1.0 - t)) as u8,
+                (70.0 + 110.0 * t) as u8,
+                (150.0 + 100.0 * t) as u8,
+                255,
+            ]);
+        }
+    }
+    let image = store.rgba(n as u32, n as u32, px);
+    let _ = image.wait();
+    s.art = Some(image);
+}
+
+/// The modern layout for a track without art.
+fn modern_noart(s: &mut State) {
+    deck(s);
+    s.modern = true;
+}
+
 /// The YouTube source with no helper running.
 fn youtube(s: &mut State) {
     deck(s);
@@ -151,6 +182,8 @@ fn main() {
             ("viz2", viz2),
             ("viz3", viz3),
             ("youtube", youtube),
+            ("modern", modern),
+            ("modern-noart", modern_noart),
         ],
         fonts: rune_theme_opencode::FONTS,
         families: rune_theme_opencode::FAMILIES,
@@ -226,14 +259,52 @@ mod tests {
     fn bare_surfaces_move_the_window_and_controls_do_not() {
         let mut rt = deck_runtime();
         assert!(drags_window(&mut rt, 6.0, 300.0), "window padding");
+        let (lx, ly) = rt.find("layout").unwrap();
         assert!(
-            drags_window(&mut rt, 220.0, 36.0),
-            "deck header between wordmark and skin chip"
+            drags_window(&mut rt, lx - 22.0, ly),
+            "deck header between wordmark and buttons"
         );
         assert!(drags_window(&mut rt, 700.0, 300.0), "visualizer stage");
         let (x, y) = rt.find("skin").unwrap();
         assert!(!drags_window(&mut rt, x, y), "skin chip keeps its press");
         assert_eq!(rt.state.skin, 1, "and the press still switched the skin");
+    }
+
+    #[test]
+    fn the_layout_button_switches_to_modern_and_back() {
+        let mut rt = deck_runtime();
+        click(&mut rt, "layout");
+        assert!(rt.state.modern);
+        assert!(
+            rt.find("art").is_some() && rt.find("upnext").is_some(),
+            "art and up next show"
+        );
+        assert!(rt.find("stage").is_none(), "the visualizer stage doesn't");
+        click(&mut rt, "layout");
+        assert!(!rt.state.modern && rt.find("stage").is_some());
+    }
+
+    #[test]
+    fn up_next_follows_the_playlist_and_its_repeat_mode() {
+        let mut rt = deck_runtime(); // six tracks, the third (index 2) playing
+        let s = &mut rt.state;
+        s.shuffle = false;
+        s.repeat = state::Repeat::Off;
+        assert_eq!(s.up_next(10), vec![3, 4, 5]);
+        s.repeat = state::Repeat::All;
+        assert_eq!(
+            s.up_next(10),
+            vec![3, 4, 5, 0, 1],
+            "wraps, never repeats the current track"
+        );
+        assert_eq!(s.up_next(2), vec![3, 4]);
+        s.repeat = state::Repeat::One;
+        assert_eq!(s.up_next(10), vec![2]);
+        s.shuffle = true;
+        assert!(
+            s.up_next_note().is_some(),
+            "shuffle says the order is random"
+        );
     }
 
     #[test]
