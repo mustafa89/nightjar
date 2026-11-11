@@ -8,7 +8,8 @@ import os
 /// turns it into the 64 spectrum bins and 64-point waveform Nightjar draws.
 ///
 /// WebKit plays media from its own helper processes (GPU / WebContent), so the tap targets the
-/// audio processes whose responsible process is this app: Safari's own audio is never captured.
+/// audio processes whose responsible process is this app, but not the app itself: Safari's
+/// audio never comes in, and neither does Nightjar's own local-file playback.
 /// Web Audio can't do this here: WebKit doesn't feed Media Source streams into an AnalyserNode.
 /// The first capture asks for "system audio recording" permission.
 final class AudioTap: @unchecked Sendable {
@@ -54,13 +55,12 @@ final class AudioTap: @unchecked Sendable {
         return unsafeBitCast(sym, to: (@convention(c) (pid_t) -> pid_t).self)
     }()
 
-    /// Audio process objects that belong to this app (itself and its WebKit helpers).
+    /// Audio process objects of this app's WebKit helpers (not the app's own output).
     static func ownAudioProcesses() -> [AudioObjectID] {
         let me = getpid()
         let objects: [AudioObjectID] = getArray(AudioObjectID(kAudioObjectSystemObject), kAudioHardwarePropertyProcessObjectList)
         return objects.filter { object in
-            guard let pid: pid_t = get(object, kAudioProcessPropertyPID) else { return false }
-            if pid == me { return true }
+            guard let pid: pid_t = get(object, kAudioProcessPropertyPID), pid != me else { return false }
             if let responsible { return responsible(pid) == me }
             // No responsibility lookup: fall back to WebKit helpers by bundle ID.
             let bundle: CFString? = get(object, kAudioProcessPropertyBundleID)

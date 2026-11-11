@@ -103,7 +103,7 @@ impl Analyzer {
         self.settle(fresh, target_bands, target_bins, dt)
     }
 
-    /// Like `update`, from bins computed elsewhere (the YouTube helper's audio tap) in the same
+    /// Like `update`, from bins computed elsewhere (the YouTube player's audio tap) in the same
     /// 0..1 scale and band edges. `None`: nothing new arrived since the last frame.
     pub fn update_external(&mut self, spectrum: Option<(Vec<f32>, Vec<f32>)>, dt: f32) -> bool {
         let dt = dt.clamp(0.0, 0.1);
@@ -279,7 +279,7 @@ mod tests {
         }
         assert!(
             a.levels.bands.iter().all(|&b| b == 0.0),
-            "falls to rest when the helper stops"
+            "falls to rest when the player stops"
         );
     }
 

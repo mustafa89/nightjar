@@ -44,7 +44,7 @@ pub enum Repeat {
     One,
 }
 
-/// Where the music comes from: files Nightjar plays itself, or the YouTube Music helper app.
+/// Where the music comes from: files Nightjar plays itself, or its YouTube Music window.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Source {
     Local,
@@ -112,6 +112,8 @@ pub struct State {
     /// track first. Rebuilt when shuffle toggles or the playlist changes.
     order: Vec<usize>,
     youtube: Option<YouTube>,
+    /// From the window's start; None in headless runs, which never start the YouTube player.
+    waker: Option<rune::Waker>,
     arts: Option<ArtStore>,
     art_source: Option<art::Source>,
     /// When the notch app last got a status, and what it said, to resend on any change.
@@ -166,6 +168,7 @@ impl State {
             bridge: None,
             order: Vec::new(),
             youtube: None,
+            waker: None,
             arts: None,
             art_source: None,
             sent_at: None,
@@ -204,9 +207,9 @@ impl State {
     /// line join the playlist and the first of them plays.
     pub fn start(&mut self, waker: rune::Waker) {
         self.bridge = Some(Bridge::start(Some(waker.clone())));
-        if self.youtube.is_none() {
-            self.youtube = Some(YouTube::start(Some(waker.clone())));
-        }
+        // The YouTube player starts on first use (ensure_youtube), not here: this also runs for
+        // headless snapshots.
+        self.waker = Some(waker.clone());
         self.arts = Some(ArtStore::new(waker.clone()));
         let reader = MetaReader::spawn(Some(waker));
         for t in &self.tracks {
@@ -235,7 +238,7 @@ impl State {
         self.current.and_then(|i| self.tracks.get(i))
     }
 
-    /// The YouTube helper's latest status while it runs.
+    /// The YouTube player's latest status while it runs.
     pub fn yt(&self) -> Option<&youtube::Status> {
         self.youtube.as_ref().and_then(|y| y.status())
     }
@@ -634,7 +637,7 @@ impl State {
 
     // ── Sources ──────────────────────────────────────────────────────────────
 
-    /// Sends a command to the YouTube helper, opening it first when it isn't running.
+    /// Sends a command to the YouTube player, opening its window first when it isn't answering.
     fn yt_send(&mut self, command: &str) {
         match &self.youtube {
             Some(y) if y.connected() => y.send(command),
@@ -644,15 +647,26 @@ impl State {
 
     /// Opens the YouTube Music window (or brings it forward).
     pub fn open_youtube(&mut self) {
-        let result = self
-            .youtube
-            .as_ref()
-            .map_or(Err("YouTube link not started".to_string()), |y| y.launch());
-        match result {
-            Ok(()) if !self.youtube_connected() => self.say("Opening YouTube Music…"),
-            Ok(()) => {}
-            Err(e) => self.say(e),
+        self.ensure_youtube();
+        if !self.youtube_connected() {
+            self.say("Opening YouTube Music…");
         }
+        if let Some(y) = &self.youtube {
+            y.show();
+        }
+    }
+
+    /// Starts the YouTube player (window hidden) the first time it's needed. Needs the window's
+    /// waker, so headless runs never start it.
+    fn ensure_youtube(&mut self) {
+        // Snapshot scenes and tests (demo) never start a real player, even with a waker.
+        if self.youtube.is_some() || self.demo {
+            return;
+        }
+        let Some(waker) = self.waker.clone() else {
+            return;
+        };
+        self.youtube = Some(YouTube::start(waker, &youtube::Options::default()));
     }
 
     /// Switches source; whatever was playing on the other one pauses.
@@ -679,7 +693,7 @@ impl State {
         self.save();
     }
 
-    /// Headless scenes: YouTube as if the helper had just reported `status`.
+    /// Headless scenes: YouTube as if the player had just reported `status`.
     pub fn fake_youtube(&mut self, status: youtube::Status) {
         self.source = Source::YouTube;
         self.youtube = Some(YouTube::offline(status));
@@ -892,6 +906,10 @@ impl State {
             changed = true;
         }
 
+        // Nightjar opened on the YouTube source: start the player, window still hidden.
+        if self.source == Source::YouTube {
+            self.ensure_youtube();
+        }
         if let Some(y) = &mut self.youtube {
             changed |= y.poll();
         }

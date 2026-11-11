@@ -1,44 +1,42 @@
 import AppKit
 import WebKit
 
-/// The YouTube Music window: music.youtube.com in a WKWebView with the Nightjar script injected,
-/// sampled 30 times a second while playing (twice a second otherwise) and reported to Nightjar
-/// with the spectrum from the app's audio tap.
-/// Closing the window hides it; music keeps playing. Cmd-Q quits.
+/// The YouTube Music window inside Nightjar: music.youtube.com in a WKWebView with the Nightjar
+/// page script, sampled 30 times a second while playing (twice a second otherwise) with the
+/// spectrum from the audio tap. Each status goes to `onStatus` (the bridge to Rust).
+/// Closing the window hides it; the music keeps playing.
 @MainActor
-final class Player: NSObject, NSWindowDelegate, WKNavigationDelegate, WKUIDelegate {
-    static let home = URL(string: "https://music.youtube.com/")!
+final class YouTubePlayer: NSObject, NSWindowDelegate, WKUIDelegate {
+    nonisolated static let home = URL(string: "https://music.youtube.com/")!
     /// Google refuses sign-in from browsers it doesn't recognise; present as Safari.
     static let userAgent =
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15"
 
     let window: NSWindow
     let webView: WKWebView
-    private let link: Link
+    var onStatus: ((String) -> Void)?
     private let tap: AudioTap
     private let tapEnabled: Bool
     /// Tap set-up can wait on the permission prompt; never on the main thread.
     private let tapQueue = DispatchQueue(label: "nightjar.youtube.tap")
     private var timer: Timer?
+    private var keys: Any?
     private var tick = 0
     private var lastState = ""
-    private var activity: NSObjectProtocol?
 
-    init(start: URL, silent: Bool) {
+    /// `silent` (tests): a throwaway web session, no autoplay, every media element muted, and
+    /// no audio tap unless `tap` asks for a muted one.
+    init(start: URL, script: String, silent: Bool, tap tapInSilent: Bool) {
         let config = WKWebViewConfiguration()
         // Persistent, so you sign in once; test runs get a throwaway store and never touch it.
         config.websiteDataStore = silent ? .nonPersistent() : .default()
-        // Silent test runs never autoplay; their tap is muted as well.
         config.mediaTypesRequiringUserActionForPlayback = silent ? .all : []
         let scripts = config.userContentController
         if silent {
-            // Test runs: every media element is muted the moment it starts, before any audio.
             let mute = "for (const e of ['loadstart', 'play', 'playing']) document.addEventListener(e, (ev) => { if (ev.target instanceof HTMLMediaElement) { ev.target.muted = true; ev.target.volume = 0; } }, true);"
             scripts.addUserScript(WKUserScript(source: mute, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         }
-        if let url = Bundle.main.url(forResource: "inject", withExtension: "js"), let js = try? String(contentsOf: url, encoding: .utf8) {
-            scripts.addUserScript(WKUserScript(source: js, injectionTime: .atDocumentStart, forMainFrameOnly: true))
-        }
+        scripts.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
 
         webView = WKWebView(frame: .zero, configuration: config)
         webView.customUserAgent = Self.userAgent
@@ -56,18 +54,13 @@ final class Player: NSObject, NSWindowDelegate, WKNavigationDelegate, WKUIDelega
         window.isReleasedWhenClosed = false
         if !window.setFrameUsingName("NightjarYouTube") { window.center() }
 
-        link = Link()
         tap = AudioTap(muted: silent)
-        // Silent test runs make no tap unless asked (NJYT_TAP=1): a tap asks for permission.
-        tapEnabled = !silent || ProcessInfo.processInfo.environment["NJYT_TAP"] == "1"
+        tapEnabled = !silent || tapInSilent
         super.init()
         window.delegate = self
-        webView.navigationDelegate = self
         webView.uiDelegate = self
-        link.onCommand = { [weak self] name, arg in self?.run(name, arg) }
+        installShortcuts()
 
-        // App Nap would slow the sampling timer while the window is hidden.
-        activity = ProcessInfo.processInfo.beginActivity(options: .userInitiatedAllowingIdleSystemSleep, reason: "Reports playback to Nightjar")
         if silent {
             // A throwaway store has no consent choice yet: "reject all" (SOCS=CAI) skips the EU
             // consent page, as answering it once would.
@@ -106,38 +99,58 @@ final class Player: NSObject, NSWindowDelegate, WKNavigationDelegate, WKUIDelega
                     status["bins"] = spectrum.bins
                     status["wave"] = spectrum.wave
                 }
-                status["tap"] = self.tap.status
+                status["tap"] = self.tapEnabled ? self.tap.status : "off"
                 if let out = try? JSONSerialization.data(withJSONObject: status), let text = String(data: out, encoding: .utf8) {
-                    self.link.send(text)
+                    self.onStatus?(text)
                 }
             }
         }
     }
 
-    private func run(_ name: String, _ arg: Double?) {
-        if name == "show" { return show() }
+    /// toggle, next, prev, seek <s>, volume <0..1>, queue <n>: run by the page script.
+    func run(_ name: String, _ arg: Double?) {
         guard ["toggle", "next", "prev", "seek", "volume", "queue"].contains(name) else { return }
         let value = arg.map { String($0) } ?? "undefined"
         webView.evaluateJavaScript("window.__nj && window.__nj.cmd('\(name)', \(value))", completionHandler: nil)
         lastState = "playing" // sample at full rate until the page says otherwise
     }
 
-    /// Test aid: with `NJYT_SNAP=<file.png>` set at launch, saves what the page shows every 5 s.
-    func snapshotEvery5s(to path: String) {
-        let timer = Timer(timeInterval: 5, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated {
-                self?.webView.takeSnapshot(with: nil) { image, _ in
-                    guard let tiff = image?.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff),
-                          let png = rep.representation(using: .png, properties: [:]) else { return }
-                    try? png.write(to: URL(fileURLWithPath: path))
-                }
-            }
+    /// Editing keys for the sign-in fields, Cmd-W to hide and Cmd-R to reload: only while this
+    /// window is in front, so Nightjar's own window keeps its keys.
+    private func installShortcuts() {
+        keys = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            let mods = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+            guard mods.contains(.command), let key = event.charactersIgnoringModifiers?.lowercased() else { return event }
+            let windowNumber = event.windowNumber
+            let handled = MainActor.assumeIsolated { self?.shortcut(key, shift: mods.contains(.shift), windowNumber: windowNumber) ?? false }
+            return handled ? nil : event
         }
-        RunLoop.main.add(timer, forMode: .common)
     }
 
-    func reload() { webView.reload() }
-    func goHome() { webView.load(URLRequest(url: Self.home)) }
+    /// Returns true when the key was this window's to handle.
+    private func shortcut(_ key: String, shift: Bool, windowNumber: Int) -> Bool {
+        guard windowNumber == window.windowNumber else { return false }
+        switch key {
+        case "w":
+            window.orderOut(nil)
+            return true
+        case "r":
+            webView.reload()
+            return true
+        default:
+            break
+        }
+        let action: Selector? = switch key {
+        case "x": #selector(NSText.cut(_:))
+        case "c": #selector(NSText.copy(_:))
+        case "v": #selector(NSText.paste(_:))
+        case "a": #selector(NSText.selectAll(_:))
+        case "z": shift ? Selector(("redo:")) : Selector(("undo:"))
+        default: nil
+        }
+        guard let action else { return false }
+        return NSApp.sendAction(action, to: nil, from: webView)
+    }
 
     // MARK: NSWindowDelegate
 

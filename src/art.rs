@@ -1,5 +1,5 @@
 //! Album art for the modern layout: the cover embedded in a file's tags, else a cover image in
-//! its folder, or the YouTube helper's artwork URL. One worker finds the bytes; Rune's image
+//! its folder, or the YouTube player's artwork URL. One worker finds the bytes; Rune's image
 //! cache decodes them off the main thread.
 
 use std::collections::HashMap;

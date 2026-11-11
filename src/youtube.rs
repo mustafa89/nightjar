@@ -1,20 +1,42 @@
-//! The YouTube Music source: talks to the Nightjar YouTube helper app (`ytmusic/`), which plays
-//! music.youtube.com in a web view and taps its audio. UDP on 127.0.0.1 only:
+//! The YouTube Music source: the Swift backend (`backend/`, linked into this binary by
+//! build.rs) plays music.youtube.com in a WKWebView window inside Nightjar and taps its audio.
+//! Rust talks to it through four C calls on the main thread:
 //!
-//! - helper → Nightjar, port 47813: JSON status (state, title, artist, album, pos, dur, volume,
-//!   64 spectrum bins and a 64-point waveform while playing, signedIn, tap).
-//! - Nightjar → helper, port 47814: `toggle`, `next`, `prev`, `show`, `seek <s>`, `volume <0..1>`.
+//! - `nj_yt_start`: create the player (window hidden) with the page script; it wakes Rune after
+//!   each new status.
+//! - `nj_yt_show`: bring its window forward.
+//! - `nj_yt_command`: `toggle`, `next`, `prev`, `seek <s>`, `volume <0..1>`, `queue <n>`.
+//! - `nj_yt_status`: the newest status JSON (state, title, artist, album, art, pos, dur, volume,
+//!   64 spectrum bins and a 64-point waveform while playing, signedIn, queue, tap).
 
 use serde::Deserialize;
-use std::net::UdpSocket;
-use std::sync::mpsc::{Receiver, channel};
+use std::ffi::{CString, c_char, c_void};
 use std::time::{Duration, Instant};
 
-pub const STATUS_PORT: u16 = 47813;
-pub const COMMAND_PORT: u16 = 47814;
-pub const BUNDLE_ID: &str = "dev.mustafa.nightjar.youtube";
-/// No status for this long means the helper quit.
+/// The page script injected into music.youtube.com.
+const PAGE_SCRIPT: &str = include_str!("../backend/inject.js");
+/// No status for this long means the page stopped answering.
 const TIMEOUT: Duration = Duration::from_secs(3);
+
+unsafe extern "C" {
+    fn nj_yt_start(
+        wake: extern "C" fn(*mut c_void),
+        ctx: *mut c_void,
+        script: *const c_char,
+        url: *const c_char,
+        silent: bool,
+        tap: bool,
+    );
+    fn nj_yt_show();
+    fn nj_yt_command(name: *const c_char, arg: f64, has_arg: bool);
+    fn nj_yt_status(after: u64, seq: *mut u64, buf: *mut u8, cap: usize) -> usize;
+}
+
+extern "C" fn wake(ctx: *mut c_void) {
+    // SAFETY: ctx is the boxed waker YouTube::start keeps alive for the process's life.
+    let waker = unsafe { &*(ctx as *const rune::Waker) };
+    waker();
+}
 
 /// One song after the current one in YouTube Music's queue.
 #[derive(Clone, Debug, Default, Deserialize, PartialEq)]
@@ -46,59 +68,63 @@ pub struct Status {
 }
 
 pub struct YouTube {
-    out: Option<UdpSocket>,
-    rx: Receiver<Status>,
+    /// None: an offline link for tests and headless scenes (no player).
+    native: Option<Native>,
     pub last: Option<Status>,
     last_at: Option<Instant>,
     /// Spectrum not yet handed to the analyser.
     spectrum: Option<(Vec<f32>, Vec<f32>)>,
 }
 
+struct Native {
+    seq: u64,
+    buf: Vec<u8>,
+    /// Kept alive: the Swift side calls back into it after every status.
+    _waker: Box<rune::Waker>,
+}
+
+/// How the player starts: tests ask for a silent one (see YouTubePlayer.init) and a page.
+#[derive(Clone, Debug, Default)]
+pub struct Options {
+    pub silent: bool,
+    pub tap: bool,
+    pub url: Option<String>,
+}
+
 impl YouTube {
-    /// Listens for the helper's status, unless another Nightjar already does.
-    pub fn start(waker: Option<rune::Waker>) -> YouTube {
-        let out = UdpSocket::bind(("127.0.0.1", 0))
-            .ok()
-            .filter(|s| s.connect(("127.0.0.1", COMMAND_PORT)).is_ok());
-        let (tx, rx) = channel();
-        // Tests point a fake helper at another port so a running real helper can't mix in.
-        let port = std::env::var("NIGHTJAR_YT_STATUS_PORT")
-            .ok()
-            .and_then(|p| p.parse().ok())
-            .unwrap_or(STATUS_PORT);
-        if let Ok(sock) = UdpSocket::bind(("127.0.0.1", port)) {
-            let _ = std::thread::Builder::new()
-                .name("nightjar-youtube".into())
-                .spawn(move || {
-                    let mut buf = vec![0u8; 16 * 1024];
-                    while let Ok((n, _)) = sock.recv_from(&mut buf) {
-                        let Ok(status) = serde_json::from_slice::<Status>(&buf[..n]) else {
-                            continue;
-                        };
-                        if tx.send(status).is_err() {
-                            break;
-                        }
-                        if let Some(w) = &waker {
-                            w();
-                        }
-                    }
-                });
+    /// Creates the player (its window stays hidden until `show`). Once per process.
+    pub fn start(waker: rune::Waker, options: &Options) -> YouTube {
+        let waker = Box::new(waker);
+        let script = CString::new(PAGE_SCRIPT).expect("page script has no NUL");
+        let url = options.url.as_deref().and_then(|u| CString::new(u).ok());
+        // SAFETY: all pointers outlive the call; the Swift side copies the strings, and the
+        // boxed waker lives in the returned value for as long as the player runs.
+        unsafe {
+            nj_yt_start(
+                wake,
+                &*waker as *const rune::Waker as *mut c_void,
+                script.as_ptr(),
+                url.as_ref().map_or(std::ptr::null(), |u| u.as_ptr()),
+                options.silent,
+                options.tap,
+            );
         }
         YouTube {
-            out,
-            rx,
+            native: Some(Native {
+                seq: 0,
+                buf: vec![0; 256 * 1024],
+                _waker: waker,
+            }),
             last: None,
             last_at: None,
             spectrum: None,
         }
     }
 
-    /// A link with no sockets that reports `status` as just received: headless scenes.
+    /// A link with no player that reports `status` as just received: headless scenes, tests.
     pub fn offline(status: Status) -> YouTube {
-        let (_tx, rx) = channel();
         YouTube {
-            out: None,
-            rx,
+            native: None,
             last: Some(status),
             last_at: Some(Instant::now()),
             spectrum: None,
@@ -110,7 +136,7 @@ impl YouTube {
     pub fn poll(&mut self) -> bool {
         let was_connected = self.connected();
         let mut changed = false;
-        for status in self.rx.try_iter() {
+        if let Some(status) = self.read() {
             let prev = self.last.as_ref();
             changed |= prev.is_none_or(|p| {
                 p.state != status.state
@@ -129,11 +155,31 @@ impl YouTube {
         changed || was_connected != self.connected()
     }
 
+    /// The newest status from the player, if there's one it hasn't read yet.
+    fn read(&mut self) -> Option<Status> {
+        let native = self.native.as_mut()?;
+        let mut seq = native.seq;
+        // SAFETY: buf is valid for its length; the call writes at most that many bytes.
+        let n = unsafe {
+            nj_yt_status(
+                native.seq,
+                &mut seq,
+                native.buf.as_mut_ptr(),
+                native.buf.len(),
+            )
+        };
+        if n == 0 {
+            return None;
+        }
+        native.seq = seq;
+        serde_json::from_slice(&native.buf[..n]).ok()
+    }
+
     pub fn connected(&self) -> bool {
         self.last_at.is_some_and(|t| t.elapsed() < TIMEOUT)
     }
 
-    /// The latest status while the helper is running.
+    /// The latest status while the player answers.
     pub fn status(&self) -> Option<&Status> {
         self.last.as_ref().filter(|_| self.connected())
     }
@@ -142,26 +188,25 @@ impl YouTube {
         self.spectrum.take()
     }
 
+    /// `name` or `name value`: toggle, next, prev, seek 42.5, volume 0.6, queue 3.
     pub fn send(&self, command: &str) {
-        if let Some(sock) = &self.out {
-            let _ = sock.send(command.as_bytes());
+        if self.native.is_none() {
+            return;
         }
+        let mut words = command.split_whitespace();
+        let Some(name) = words.next().and_then(|w| CString::new(w).ok()) else {
+            return;
+        };
+        let arg = words.next().and_then(|w| w.parse::<f64>().ok());
+        // SAFETY: name outlives the call; the Swift side copies it.
+        unsafe { nj_yt_command(name.as_ptr(), arg.unwrap_or(0.0), arg.is_some()) };
     }
 
-    /// Opens the helper (or brings it forward). Err when it isn't installed.
-    pub fn launch(&self) -> Result<(), String> {
-        if self.connected() {
-            self.send("show");
-            return Ok(());
-        }
-        let ok = std::process::Command::new("/usr/bin/open")
-            .args(["-b", BUNDLE_ID])
-            .status()
-            .is_ok_and(|s| s.success());
-        if ok {
-            Ok(())
-        } else {
-            Err("Nightjar YouTube isn't installed: run ytmusic/build.sh".into())
+    /// Brings the YouTube Music window forward.
+    pub fn show(&self) {
+        if self.native.is_some() {
+            // SAFETY: no arguments; main thread, as every handler runs.
+            unsafe { nj_yt_show() };
         }
     }
 }
@@ -171,7 +216,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn a_helper_status_parses_with_missing_fields() {
+    fn a_player_status_parses_with_missing_fields() {
         let s: Status = serde_json::from_str(r#"{"state":"playing","title":"Song","pos":12.5,"dur":200,"bins":[0.5,0.25],"signedIn":true,"extra":1}"#).unwrap();
         assert_eq!(
             (s.state.as_str(), s.title.as_str(), s.pos, s.signed_in),

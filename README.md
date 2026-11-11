@@ -42,28 +42,29 @@ Formats: mp3, flac, wav, m4a/aac, ogg/vorbis.
 
 ## YouTube Music
 
-`ytmusic/` is a small Swift helper app, **Nightjar YouTube**: a background app with no Dock
-icon that quits when Nightjar quits. It plays music.youtube.com in a
-WebKit window with YouTube's own player, so you sign in, search and pick music there. Nightjar
-switches to it with the **Library | YouTube** tabs (or `Y`):
+The **Library | YouTube** tabs (or `Y`) switch Nightjar to YouTube Music. It plays in a
+YouTube Music window that Nightjar opens itself: music.youtube.com in WebKit with YouTube's own
+player, so you sign in, search and pick music there. Closing that window hides it, and the music
+keeps playing.
 
-- the deck shows its title, artist, time and seek bar, and the transport, seek and volume
-  control it;
-- the spectrum and visualizer come from a Core Audio process tap on the helper's own WebKit
+- The deck shows the song's title, artist, time and seek bar, and the transport, seek and volume
+  control it. The modern layout shows YouTube's queue, and a click on a song plays it.
+- The spectrum and visualizer come from a Core Audio process tap on Nightjar's own WebKit
   processes (macOS 14.2+). The first capture asks for **System Audio Recording** permission.
-  WebKit doesn't feed YouTube's streams into Web Audio, so a page-level analyser only reads
-  silence;
-- the notch shows and controls it like local playback.
+  WebKit doesn't feed YouTube's streams into Web Audio, so a page-level analyser would only
+  read silence.
 
-```sh
-ytmusic/build.sh          # builds and installs ~/Applications/Nightjar YouTube.app
-```
+It's one app: the Swift backend (`backend/`: the YouTube window, the page script, the audio tap)
+is compiled into a static library by `build.rs` and linked into Nightjar. Rust calls it through
+four C functions (`src/youtube.rs`). Rune draws everything else.
 
-The helper talks to Nightjar over UDP on `127.0.0.1`: status JSON to port 47813, commands
-(`toggle`, `next`, `prev`, `show`, `seek <s>`, `volume <0..1>`) to port 47814. It is ad-hoc
-signed, so macOS asks for audio permission again after each rebuild. Test aids (all off by
-default): `NJYT_SILENT=1` (no autoplay, no audio tap, a throwaway web session),
-`NJYT_HIDDEN=1` (no window), `NJYT_STATUS_PORT` / `NJYT_COMMAND_PORT` (other ports).
+`scripts/install.sh` builds the app bundle itself, so its `Info.plist` carries the audio usage
+string. Ad-hoc signing makes macOS ask for the permission again after each install;
+`MAC_APP_SIGN="<identity>"` keeps the answer.
+
+`cargo run --release --example youtube_check` checks the YouTube side without a window or sound:
+a silent player (throwaway session, muted media, no tap) loads a song, waits for the queue and
+plays its third song.
 
 ## Notch link
 
@@ -86,7 +87,8 @@ plays. Without the notch app, the packets are dropped.
 | `src/state.rs` | Playlist and transport actions. `poll` reads tags, moves to the next track at the end, and publishes levels into `rune::Live` values, so the bars, seek bar and clock move without re-running the view. |
 | `src/viz.rs` | A Rune `Compositor`. It draws the UI with `Renderer::draw_with` and paints one WGSL shader into the stage's `El::effect` slot. A uniform buffer feeds the shader the levels and the skin palette. |
 | `src/bridge.rs` | The notch link: status out, commands in. |
-| `src/youtube.rs` | The YouTube Music source: helper status in, commands out. |
+| `src/youtube.rs` | The YouTube Music source: the C calls into the Swift backend. |
+| `backend/*.swift`, `build.rs` | The YouTube window, its page script and the audio tap, built into a static library. |
 | `src/art.rs` | Album art: embedded covers, cover files and YouTube artwork, fetched on a worker and decoded by Rune's image cache. |
 | `src/library.rs` | Folder scans, plus tags and durations read by symphonia on a background thread. |
 | `src/skin.rs`, `src/view.rs`, `src/icons.rs` | Skins, layout and icons. |

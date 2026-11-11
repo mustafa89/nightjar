@@ -186,7 +186,7 @@ fn modern_noart(s: &mut State) {
     s.modern = true;
 }
 
-/// The YouTube source with no helper running.
+/// The YouTube source with its player not started.
 fn youtube(s: &mut State) {
     deck(s);
     s.source = state::Source::YouTube;
@@ -368,10 +368,10 @@ mod tests {
     }
 
     #[test]
-    fn a_click_on_a_youtube_queue_song_sends_it_to_the_helper() {
+    fn a_click_on_a_youtube_queue_song_sends_it_to_the_player() {
         unsafe { std::env::set_var("NIGHTJAR_CONFIG", "/nonexistent/nightjar/settings.json") };
         let mut s = State::new();
-        youtube_queue(&mut s); // modern layout, a connected (offline) helper with three queued songs
+        youtube_queue(&mut s); // modern layout, an offline player with three queued songs
         let mut rt = Runtime::new(
             s,
             view::view,
@@ -386,7 +386,7 @@ mod tests {
         click(&mut rt, "yt-next-1");
         assert_eq!(
             rt.state.message, None,
-            "sent to the running helper; nothing tried to open it"
+            "sent to the running player; nothing tried to open its window"
         );
     }
 

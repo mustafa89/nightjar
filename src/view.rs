@@ -655,7 +655,7 @@ fn source_tabs(s: &State, k: &Skin) -> El {
         .help("Source (Y)")
 }
 
-/// The playlist card in YouTube mode: the helper's state and a button to its window, where
+/// The playlist card in YouTube mode: the player's state and a button to its window, where
 /// music is searched and picked.
 fn youtube_card(s: &State, k: &'static Skin) -> El {
     let y = s.yt();
