@@ -301,7 +301,7 @@ impl Compositor<State> for Viz {
         let s = &f.rt.state;
         let l = s.levels().clone();
         let k = skin(s.skin);
-        self.playing = s.play == Play::Playing || s.demo;
+        self.playing = s.now_play() == Play::Playing || s.demo;
         let energy = (l.bass * 0.6 + l.mid * 0.3 + l.treble * 0.1).clamp(0.0, 1.0);
         if self.playing {
             self.time += f.dt.min(0.1) as f32 * (0.35 + 1.4 * energy);

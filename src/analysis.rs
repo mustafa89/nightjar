@@ -99,7 +99,44 @@ impl Analyzer {
             for (k, w) in self.levels.wave.iter_mut().enumerate() {
                 *w = self.samples[WINDOW - WAVE * step + k * step];
             }
-        } else {
+        }
+        self.settle(fresh, target_bands, target_bins, dt)
+    }
+
+    /// Like `update`, from bins computed elsewhere (the YouTube helper's audio tap) in the same
+    /// 0..1 scale and band edges. `None`: nothing new arrived since the last frame.
+    pub fn update_external(&mut self, spectrum: Option<(Vec<f32>, Vec<f32>)>, dt: f32) -> bool {
+        let dt = dt.clamp(0.0, 0.1);
+        let mut target_bins = [0.0f32; BINS];
+        let mut target_bands = [0.0f32; BANDS];
+        let fresh = spectrum.is_some();
+        if let Some((bins, wave)) = spectrum {
+            for (t, b) in target_bins.iter_mut().zip(&bins) {
+                *t = b.clamp(0.0, 1.0);
+            }
+            // The 64 bins share the bands' edges: each band is the loudest of its bins.
+            for (i, t) in target_bands.iter_mut().enumerate() {
+                let a = i * BINS / BANDS;
+                let b = ((i + 1) * BINS / BANDS).max(a + 1);
+                *t = target_bins[a..b].iter().copied().fold(0.0, f32::max);
+            }
+            for (k, w) in self.levels.wave.iter_mut().enumerate() {
+                *w = wave.get(k).copied().unwrap_or(0.0);
+            }
+        }
+        self.settle(fresh, target_bands, target_bins, dt)
+    }
+
+    /// Bars rise at once and fall at a fixed rate, peaks hold then fall, then the levels and
+    /// beat. Returns false once everything is at rest.
+    fn settle(
+        &mut self,
+        fresh: bool,
+        target_bands: [f32; BANDS],
+        target_bins: [f32; BINS],
+        dt: f32,
+    ) -> bool {
+        if !fresh {
             for w in &mut self.levels.wave {
                 *w *= (1.0 - dt * 8.0).max(0.0);
             }
@@ -226,6 +263,24 @@ mod tests {
         }
         assert!(!moving, "at rest after four silent seconds");
         assert!(a.levels.bands.iter().all(|&b| b == 0.0));
+    }
+
+    #[test]
+    fn external_bins_drive_bands_like_local_audio() {
+        let mut a = Analyzer::new();
+        let mut bins = vec![0.0f32; BINS];
+        bins[3] = 0.9; // in the second band (bins 3..6)
+        assert!(a.update_external(Some((bins, vec![0.5; WAVE])), 1.0 / 60.0));
+        assert_eq!(a.levels.bands[1], 0.9);
+        assert_eq!(a.levels.bands[0], 0.0);
+        assert_eq!(a.levels.wave[10], 0.5);
+        for _ in 0..240 {
+            a.update_external(None, 1.0 / 60.0);
+        }
+        assert!(
+            a.levels.bands.iter().all(|&b| b == 0.0),
+            "falls to rest when the helper stops"
+        );
     }
 
     fn scope_push(scope: &Scope, v: f32) {

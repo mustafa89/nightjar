@@ -27,6 +27,29 @@ scripts/install.sh                             # ~/Applications/Nightjar.app
 
 Formats: mp3, flac, wav, m4a/aac, ogg/vorbis.
 
+## YouTube Music
+
+`ytmusic/` is a small Swift helper app, **Nightjar YouTube**. It plays music.youtube.com in a
+WebKit window with YouTube's own player, so you sign in, search and pick music there. Nightjar
+switches to it with the **Library | YouTube** tabs (or `Y`):
+
+- the deck shows its title, artist, time and seek bar, and the transport, seek and volume
+  control it;
+- the spectrum and visualizer come from a Core Audio process tap on the helper's own WebKit
+  processes (macOS 14.2+). The first capture asks for **System Audio Recording** permission.
+  WebKit doesn't feed YouTube's streams into Web Audio, so a page-level analyser only reads
+  silence;
+- the notch shows and controls it like local playback.
+
+```sh
+ytmusic/build.sh          # builds and installs ~/Applications/Nightjar YouTube.app
+```
+
+The helper talks to Nightjar over UDP on `127.0.0.1`: status JSON to port 47813, commands
+(`toggle`, `next`, `prev`, `show`, `seek <s>`, `volume <0..1>`) to port 47814. It is ad-hoc
+signed, so macOS asks for audio permission again after each rebuild. `NJYT_SILENT=1` starts it
+for automated checks: no autoplay, and a muted tap.
+
 ## Notch link
 
 Nightjar talks to NotchSwitcher (`~/code/notch-switcher`) over UDP on `127.0.0.1` only:
@@ -48,6 +71,7 @@ plays. Without the notch app, the packets are dropped.
 | `src/state.rs` | Playlist and transport actions. `poll` reads tags, moves to the next track at the end, and publishes levels into `rune::Live` values, so the bars, seek bar and clock move without re-running the view. |
 | `src/viz.rs` | A Rune `Compositor`. It draws the UI with `Renderer::draw_with` and paints one WGSL shader into the stage's `El::effect` slot. A uniform buffer feeds the shader the levels and the skin palette. |
 | `src/bridge.rs` | The notch link: status out, commands in. |
+| `src/youtube.rs` | The YouTube Music source: helper status in, commands out. |
 | `src/library.rs` | Folder scans, plus tags and durations read by symphonia on a background thread. |
 | `src/skin.rs`, `src/view.rs`, `src/icons.rs` | Skins, layout and icons. |
 
@@ -66,6 +90,7 @@ plays. Without the notch app, the packets are dropped.
 | `r` | repeat: off → playlist → track |
 | `k` / `K` | next / previous skin |
 | `v` / `V` | next / previous visualizer |
+| `y` | switch source: library ↔ YouTube Music |
 | `⌫` | remove the selected track |
 | `q` | quit |
 

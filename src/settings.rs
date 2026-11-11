@@ -12,6 +12,8 @@ pub struct Settings {
     pub volume: f32,
     pub shuffle: bool,
     pub repeat: u8,
+    /// 0 = local files, 1 = YouTube Music.
+    pub source: u8,
     pub playlist: Vec<PathBuf>,
 }
 
@@ -23,6 +25,7 @@ impl Default for Settings {
             volume: 0.8,
             shuffle: false,
             repeat: 0,
+            source: 0,
             playlist: Vec::new(),
         }
     }

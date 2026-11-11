@@ -5,7 +5,7 @@ use crate::analysis::BANDS;
 use crate::icons;
 use crate::library::{self, EXTENSIONS};
 use crate::skin::{Skin, c, skin};
-use crate::state::{BAR_GAP, BAR_H, BAR_W, Play, Repeat, SEEK_W, State, VIZ_MODES};
+use crate::state::{BAR_GAP, BAR_H, BAR_W, Play, Repeat, SEEK_W, Source, State, VIZ_MODES};
 use crate::viz::VIZ_MARK;
 use rune::tok::TextStyle;
 use rune::{
@@ -109,56 +109,21 @@ fn deck(s: &State, k: &'static Skin) -> El {
 }
 
 fn display(s: &State, k: &'static Skin) -> El {
-    let track = s
-        .current_track()
-        .or_else(|| s.selected.and_then(|i| s.tracks.get(i)));
-    let (title, sub) = match track {
-        Some(t) => {
-            let sub = [t.artist(), t.meta.album.as_deref().unwrap_or("")]
-                .iter()
-                .filter(|x| !x.is_empty())
-                .copied()
-                .collect::<Vec<_>>()
-                .join(" · ");
-            (t.title(), sub)
-        }
-        None => (
-            "Drop music here".to_string(),
-            "mp3 · flac · wav · m4a · ogg".to_string(),
-        ),
-    };
-    let state = match s.play {
+    let now = s.now();
+    let play = now.play;
+    let title = now.title;
+    let sub = [now.artist.as_str(), now.album.as_str()]
+        .iter()
+        .filter(|x| !x.is_empty())
+        .copied()
+        .collect::<Vec<_>>()
+        .join(" · ");
+    let state = match play {
         Play::Playing => "PLAYING",
         Play::Paused => "PAUSED",
         Play::Stopped => "STOPPED",
     };
-    let mut tags: Vec<String> = Vec::new();
-    let meta = track.map(|t| &t.meta);
-    let rate = s
-        .info
-        .as_ref()
-        .filter(|_| s.current.is_some())
-        .map(|i| i.sample_rate)
-        .or(meta.and_then(|m| m.sample_rate));
-    if let Some(r) = rate {
-        tags.push(format!("{:.1} kHz", r as f32 / 1000.0).replace(".0 ", " "));
-    }
-    let ch = s
-        .info
-        .as_ref()
-        .filter(|_| s.current.is_some())
-        .map(|i| i.channels)
-        .or(meta.and_then(|m| m.channels));
-    if let Some(ch) = ch {
-        tags.push(if ch == 1 {
-            "MONO".into()
-        } else {
-            "STEREO".into()
-        });
-    }
-    if let Some(codec) = meta.and_then(|m| m.codec.clone()) {
-        tags.push(codec);
-    }
+    let tags = now.tags;
     let lit = c(k.lcd_text);
     let tag = |t: String| {
         el().h(16.0)
@@ -178,9 +143,9 @@ fn display(s: &State, k: &'static Skin) -> El {
                 .center_y()
                 .child(
                     rune::icon(
-                        if s.play == Play::Playing {
+                        if play == Play::Playing {
                             &icons::PLAY
-                        } else if s.play == Play::Paused {
+                        } else if play == Play::Paused {
                             &icons::PAUSE
                         } else {
                             &icons::STOP
@@ -270,7 +235,7 @@ fn spectrum(s: &State, k: &'static Skin) -> El {
 }
 
 fn seek(s: &State, k: &'static Skin) -> El {
-    let on = s.play != Play::Stopped;
+    let on = s.now_play() != Play::Stopped;
     let track = el().w(SEEK_W).h(4.0).radius(2.0).fill(c(k.lcd_dim)).child(
         el().radius(2.0)
             .linear_gradient(90.0, [(0.0, c(k.accent2)), (1.0, c(k.accent))])
@@ -302,7 +267,7 @@ fn seek(s: &State, k: &'static Skin) -> El {
         .on_drag(|s: &mut State, d: &mut Drag, _tx| {
             let f = (d.x / d.w).clamp(0.0, 1.0);
             match d.phase {
-                Phase::Down | Phase::Move if s.play != Play::Stopped => s.scrub = Some(f),
+                Phase::Down | Phase::Move if s.now_play() != Play::Stopped => s.scrub = Some(f),
                 Phase::Up => {
                     if let (Some(f), Some(dur)) = (s.scrub.take(), s.duration()) {
                         s.seek_to(f as f64 * dur);
@@ -339,7 +304,7 @@ fn button(k: &Skin, key: &str, icon: &'static Icon, size: f32, lit: bool) -> El 
 }
 
 fn transport(s: &State, k: &'static Skin) -> El {
-    let playing = s.play == Play::Playing;
+    let playing = s.now_play() == Play::Playing;
     let vol_w = 78.0;
     let volume = row()
         .gap(6.0)
@@ -471,6 +436,9 @@ fn small_button(k: &Skin, key: &str, icon: &'static Icon) -> El {
 }
 
 fn playlist(s: &State, k: &'static Skin) -> El {
+    if s.source == Source::YouTube {
+        return youtube_card(s, k);
+    }
     let total: f64 = s.tracks.iter().filter_map(|t| t.meta.duration).sum();
     let count = s.tracks.len();
     let header = row()
@@ -478,7 +446,7 @@ fn playlist(s: &State, k: &'static Skin) -> El {
         .h(26.0)
         .gap(4.0)
         .center_y()
-        .child(text("PLAYLIST").font(TINY).color(c(k.accent)))
+        .child(source_tabs(s, k))
         .child(
             text(if count == 0 {
                 String::new()
@@ -592,6 +560,139 @@ fn playlist(s: &State, k: &'static Skin) -> El {
         .child(footer)
 }
 
+/// LIBRARY | YOUTUBE: which source the deck plays (Y switches).
+fn source_tabs(s: &State, k: &Skin) -> El {
+    let tab = |key: &str, label: &str, source: Source| {
+        let on = s.source == source;
+        el().key(key)
+            .h(22.0)
+            .px(9.0)
+            .center()
+            .radius(11.0)
+            .fill(if on {
+                c(k.accent).alpha(0.16)
+            } else {
+                Color::TRANSPARENT
+            })
+            .hover(c(k.text).alpha(0.06))
+            .cursor(Cursor::Pointer)
+            .child(text(label.to_string()).font(TINY).color(if on {
+                c(k.accent)
+            } else {
+                c(k.muted)
+            }))
+            .on_press(move |s: &mut State| s.set_source(source))
+    };
+    row()
+        .gap(2.0)
+        .child(tab("src-local", "LIBRARY", Source::Local))
+        .child(tab("src-youtube", "YOUTUBE", Source::YouTube))
+        .help("Source (Y)")
+}
+
+/// The playlist card in YouTube mode: the helper's state and a button to its window, where
+/// music is searched and picked.
+fn youtube_card(s: &State, k: &'static Skin) -> El {
+    let y = s.yt();
+    let line = |label: &str, value: String, good: bool| {
+        row()
+            .w_full()
+            .gap(8.0)
+            .child(text(label.to_string()).font(TINY).color(c(k.muted)).w(78.0))
+            .child(
+                text(value)
+                    .font(SMALL)
+                    .color(if good { c(k.text) } else { c(k.accent2) })
+                    .truncate_fade()
+                    .grow(1.0)
+                    .min_w(0.0),
+            )
+    };
+    let (window, signed, spectrum) = match y {
+        None => (
+            ("Not open".to_string(), false),
+            ("—".to_string(), true),
+            ("—".to_string(), true),
+        ),
+        Some(y) => (
+            ("Open".to_string(), true),
+            if y.signed_in {
+                ("Signed in".to_string(), true)
+            } else {
+                ("Signed out: sign in in its window".to_string(), false)
+            },
+            match y.tap.as_str() {
+                t if t.starts_with("ok") => ("Live".to_string(), true),
+                t if t.starts_with("error") => (
+                    "Allow System Audio Recording in System Settings › Privacy".to_string(),
+                    false,
+                ),
+                "waiting for audio" => ("Starts with playback".to_string(), true),
+                _ => ("Waiting for audio permission".to_string(), false),
+            },
+        ),
+    };
+    let open = row()
+        .key("yt-open")
+        .h(32.0)
+        .px(14.0)
+        .gap(8.0)
+        .center_y()
+        .radius(16.0)
+        .gradient(c(k.button[0]), c(k.button[1]))
+        .border_gradient(1.0, c(k.bevel[0]), c(k.bevel[1]))
+        .hover(Color::WHITE.alpha(0.06))
+        .press_scale(0.96)
+        .cursor(Cursor::Pointer)
+        .child(rune::icon(&icons::PLAY, 12.0).color(c(k.accent)))
+        .child(
+            text(if y.is_some() {
+                "Show YouTube Music"
+            } else {
+                "Open YouTube Music"
+            })
+            .font(SMALL)
+            .color(c(k.text)),
+        )
+        .on_press(|s: &mut State| s.open_youtube());
+    let body = col()
+        .w_full()
+        .grow(1.0)
+        .gap(8.0)
+        .pt(6.0)
+        .child(line("WINDOW", window.0, window.1))
+        .child(line("ACCOUNT", signed.0, signed.1))
+        .child(line("SPECTRUM", spectrum.0, spectrum.1))
+        .child(el().h(6.0))
+        .child(open)
+        .child(
+            text("Search and pick music in its window; the deck, the visualizer and the notch follow it.")
+                .font(SMALL)
+                .color(c(k.muted))
+                .max_lines(3),
+        );
+    let footer = text(
+        s.message
+            .clone()
+            .unwrap_or_else(|| "Y switches source · Space play · N next".into()),
+    )
+    .key("status")
+    .font(SMALL)
+    .color(c(k.muted))
+    .truncate_fade();
+    card(k)
+        .key("playlist")
+        .w_full()
+        .grow(1.0)
+        .min_h(0.0)
+        .padding(12.0)
+        .pt(8.0)
+        .gap(6.0)
+        .child(row().w_full().h(26.0).center_y().child(source_tabs(s, k)))
+        .child(body)
+        .child(footer)
+}
+
 fn track_row(s: &State, k: &Skin, i: usize, t: &library::Track) -> El {
     let current = s.current == Some(i);
     let selected = s.selected == Some(i);
@@ -658,26 +759,31 @@ fn stage(s: &State, k: &'static Skin) -> El {
                 .px(4.0),
         )
         .child(small_button(k, "viz-next", &icons::RIGHT).on_press(|s: &mut State| s.cycle_viz(1)));
-    let now = s.current_track().map(|t| {
+    let n = s.now();
+    let now = (n.play != Play::Stopped).then(|| {
         col()
-            .key(format!("now-{}", t.path.display()))
+            .key(format!("now-{}", n.title))
             .absolute(22.0, 0.0)
             .pin(Some(22.0), None, Some(22.0), Some(20.0))
             .gap(2.0)
             .child(
-                text(t.title())
+                text(n.title.clone())
                     .font(STAGE_TITLE)
                     .color(Color::WHITE)
                     .truncate_fade(),
             )
             .child(
-                text(t.artist().to_string())
+                text(n.artist.clone())
                     .font(TextStyle::new(14.0, 500.0))
                     .color(Color::WHITE.alpha(0.7))
                     .truncate_fade(),
             )
     });
-    let playing = if s.play == Play::Playing { 1.0 } else { 0.0 };
+    let playing = if s.now_play() == Play::Playing {
+        1.0
+    } else {
+        0.0
+    };
     card(k)
         .key("stage")
         .grow(1.0)

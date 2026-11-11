@@ -14,6 +14,7 @@ mod skin;
 mod state;
 mod view;
 mod viz;
+mod youtube;
 
 use rune::{AppSpec, Chrome, Key, KeyEvent, Tx, WindowOptions};
 use state::{Play, State};
@@ -53,6 +54,7 @@ fn on_key(s: &mut State, ev: &KeyEvent, tx: &mut Tx) -> bool {
             "v" => s.cycle_viz(1),
             "V" => s.cycle_viz(-1),
             "j" => s.move_selection(1),
+            "y" => s.toggle_source(),
             "q" => tx.quit(),
             _ => return false,
         },
@@ -124,6 +126,12 @@ variant!(viz1, viz, 1);
 variant!(viz2, viz, 2);
 variant!(viz3, viz, 3);
 
+/// The YouTube source with no helper running.
+fn youtube(s: &mut State) {
+    deck(s);
+    s.source = state::Source::YouTube;
+}
+
 fn main() {
     rune::prewarm_gpu();
     // Content runs under the title bar; the traffic lights sit in the deck's header.
@@ -142,6 +150,7 @@ fn main() {
             ("viz1", viz1),
             ("viz2", viz2),
             ("viz3", viz3),
+            ("youtube", youtube),
         ],
         fonts: rune_theme_opencode::FONTS,
         families: rune_theme_opencode::FAMILIES,
@@ -217,7 +226,10 @@ mod tests {
     fn bare_surfaces_move_the_window_and_controls_do_not() {
         let mut rt = deck_runtime();
         assert!(drags_window(&mut rt, 6.0, 300.0), "window padding");
-        assert!(drags_window(&mut rt, 220.0, 36.0), "deck header between wordmark and skin chip");
+        assert!(
+            drags_window(&mut rt, 220.0, 36.0),
+            "deck header between wordmark and skin chip"
+        );
         assert!(drags_window(&mut rt, 700.0, 300.0), "visualizer stage");
         let (x, y) = rt.find("skin").unwrap();
         assert!(!drags_window(&mut rt, x, y), "skin chip keeps its press");

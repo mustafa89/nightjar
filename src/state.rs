@@ -6,6 +6,7 @@ use crate::bridge::{Bridge, Command};
 use crate::library::{self, MetaReader, Track};
 use crate::settings::{self, Settings};
 use crate::skin::{SKINS, skin};
+use crate::youtube::{self, YouTube};
 use rune::{Live, LiveText, Tx};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -39,6 +40,22 @@ pub enum Repeat {
     One,
 }
 
+/// Where the music comes from: files Nightjar plays itself, or the YouTube Music helper app.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Source {
+    Local,
+    YouTube,
+}
+
+/// What the deck, stage and notch show, from whichever source is on.
+pub struct Now {
+    pub play: Play,
+    pub title: String,
+    pub artist: String,
+    pub album: String,
+    pub tags: Vec<String>,
+}
+
 impl Repeat {
     fn from(n: u8) -> Repeat {
         match n {
@@ -64,6 +81,7 @@ pub struct State {
     pub repeat: Repeat,
     pub skin: usize,
     pub viz: usize,
+    pub source: Source,
     pub message: Option<String>,
     pub drop_hover: bool,
     /// While the seek knob is held: the fraction it sits at.
@@ -78,9 +96,10 @@ pub struct State {
     engine: Option<Engine>,
     reader: Option<MetaReader>,
     bridge: Option<Bridge>,
+    youtube: Option<YouTube>,
     /// When the notch app last got a status, and what it said, to resend on any change.
-    sent_at: f64,
-    sent_key: (Option<Play>, Option<usize>),
+    sent_at: Option<std::time::Instant>,
+    sent_key: String,
     last_t: f64,
     seed: u64,
 
@@ -106,6 +125,11 @@ impl State {
             repeat: Repeat::from(s.repeat),
             skin: s.skin % SKINS.len(),
             viz: s.viz % VIZ_MODES.len(),
+            source: if s.source == 1 {
+                Source::YouTube
+            } else {
+                Source::Local
+            },
             message: None,
             drop_hover: false,
             scrub: None,
@@ -116,8 +140,9 @@ impl State {
             engine: None,
             reader: None,
             bridge: None,
-            sent_at: 0.0,
-            sent_key: (None, None),
+            youtube: None,
+            sent_at: None,
+            sent_key: String::new(),
             last_t: 0.0,
             seed: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -150,6 +175,7 @@ impl State {
     /// line join the playlist and the first of them plays.
     pub fn start(&mut self, waker: rune::Waker) {
         self.bridge = Some(Bridge::start(Some(waker.clone())));
+        self.youtube = Some(YouTube::start(Some(waker.clone())));
         let reader = MetaReader::spawn(Some(waker));
         for t in &self.tracks {
             reader.request(t.path.clone());
@@ -177,8 +203,106 @@ impl State {
         self.current.and_then(|i| self.tracks.get(i))
     }
 
+    /// The YouTube helper's latest status while it runs.
+    pub fn yt(&self) -> Option<&youtube::Status> {
+        self.youtube.as_ref().and_then(|y| y.status())
+    }
+
+    pub fn youtube_connected(&self) -> bool {
+        self.yt().is_some()
+    }
+
+    /// Play state of the source that's on.
+    pub fn now_play(&self) -> Play {
+        match self.source {
+            Source::Local => self.play,
+            Source::YouTube => match self.yt().map(|y| y.state.as_str()) {
+                Some("playing") => Play::Playing,
+                Some("paused") => Play::Paused,
+                _ => Play::Stopped,
+            },
+        }
+    }
+
+    /// Title, artist, album and display tags of what's playing (or selected) on this source.
+    pub fn now(&self) -> Now {
+        let play = self.now_play();
+        if self.source == Source::YouTube {
+            let Some(y) = self.yt() else {
+                return Now {
+                    play,
+                    title: "YouTube Music".into(),
+                    artist: "Press play to open it".into(),
+                    album: String::new(),
+                    tags: vec!["YOUTUBE".into()],
+                };
+            };
+            let mut tags = vec!["YOUTUBE".to_string()];
+            if !y.signed_in {
+                tags.push("SIGNED OUT".into());
+            }
+            if y.tap.starts_with("error") {
+                tags.push("NO SPECTRUM".into());
+            }
+            return match y.title.is_empty() {
+                true => Now {
+                    play,
+                    title: "YouTube Music".into(),
+                    artist: "Pick something in its window".into(),
+                    album: String::new(),
+                    tags,
+                },
+                false => Now {
+                    play,
+                    title: y.title.clone(),
+                    artist: y.artist.clone(),
+                    album: y.album.clone(),
+                    tags,
+                },
+            };
+        }
+        let Some(t) = self
+            .current_track()
+            .or_else(|| self.selected.and_then(|i| self.tracks.get(i)))
+        else {
+            return Now {
+                play,
+                title: "Drop music here".into(),
+                artist: "mp3 · flac · wav · m4a · ogg".into(),
+                album: String::new(),
+                tags: Vec::new(),
+            };
+        };
+        // The decoder's figures for the loaded track, else the tag reader's.
+        let info = self.info.as_ref().filter(|_| self.current.is_some());
+        let mut tags = Vec::new();
+        if let Some(r) = info.map(|i| i.sample_rate).or(t.meta.sample_rate) {
+            tags.push(format!("{:.1} kHz", r as f32 / 1000.0).replace(".0 ", " "));
+        }
+        if let Some(ch) = info.map(|i| i.channels).or(t.meta.channels) {
+            tags.push(if ch == 1 {
+                "MONO".into()
+            } else {
+                "STEREO".into()
+            });
+        }
+        if let Some(codec) = t.meta.codec.clone() {
+            tags.push(codec);
+        }
+        Now {
+            play,
+            title: t.title(),
+            artist: t.artist().to_string(),
+            album: t.meta.album.clone().unwrap_or_default(),
+            tags,
+        }
+    }
+
     /// Length of the loaded track: the decoder's figure, else the tag reader's.
     pub fn duration(&self) -> Option<f64> {
+        if self.source == Source::YouTube {
+            return self.yt().map(|y| y.dur).filter(|d| *d > 0.0);
+        }
         self.info
             .as_ref()
             .and_then(|i| i.duration)
@@ -188,6 +312,9 @@ impl State {
     pub fn position(&self) -> f64 {
         if let (Some(f), Some(d)) = (self.scrub, self.duration()) {
             return f as f64 * d;
+        }
+        if self.source == Source::YouTube {
+            return self.yt().map_or(0.0, |y| y.pos);
         }
         match (&self.engine, self.play) {
             (Some(e), Play::Playing | Play::Paused) => e.position(),
@@ -209,6 +336,7 @@ impl State {
             volume: self.volume,
             shuffle: self.shuffle,
             repeat: self.repeat.code(),
+            source: (self.source == Source::YouTube) as u8,
             playlist: self.tracks.iter().map(|t| t.path.clone()).collect(),
         });
     }
@@ -240,7 +368,7 @@ impl State {
         self.tracks.remove(i);
         match self.current {
             Some(c) if c == i => {
-                self.stop();
+                self.stop_local();
                 self.current = None;
             }
             Some(c) if c > i => self.current = Some(c - 1),
@@ -255,7 +383,7 @@ impl State {
     }
 
     pub fn clear(&mut self) {
-        self.stop();
+        self.stop_local();
         self.tracks.clear();
         self.current = None;
         self.selected = None;
@@ -305,6 +433,9 @@ impl State {
     }
 
     pub fn toggle_play(&mut self) {
+        if self.source == Source::YouTube {
+            return self.yt_send("toggle");
+        }
         match self.play {
             Play::Playing => {
                 if let Some(e) = &self.engine {
@@ -330,7 +461,16 @@ impl State {
         }
     }
 
+    /// Stop: local playback stops; YouTube pauses (its web player has no stop).
     pub fn stop(&mut self) {
+        match self.source {
+            Source::YouTube if self.now_play() == Play::Playing => self.yt_send("toggle"),
+            Source::YouTube => {}
+            Source::Local => self.stop_local(),
+        }
+    }
+
+    fn stop_local(&mut self) {
         if let Some(e) = &self.engine {
             e.stop();
         }
@@ -374,13 +514,23 @@ impl State {
     }
 
     pub fn next(&mut self) {
+        if self.source == Source::YouTube {
+            return self.yt_send("next");
+        }
+        self.next_local();
+    }
+
+    fn next_local(&mut self) {
         match self.following(1) {
             Some(i) => self.play_index(i),
-            None => self.stop(),
+            None => self.stop_local(),
         }
     }
 
     pub fn prev(&mut self) {
+        if self.source == Source::YouTube {
+            return self.yt_send("prev");
+        }
         if self.position() > 3.0 {
             self.seek_to(0.0);
             return;
@@ -391,6 +541,9 @@ impl State {
     }
 
     pub fn seek_to(&mut self, seconds: f64) {
+        if self.source == Source::YouTube {
+            return self.yt_send(&format!("seek {:.1}", seconds.max(0.0)));
+        }
         if self.play == Play::Stopped {
             return;
         }
@@ -412,6 +565,66 @@ impl State {
         if let Some(e) = &self.engine {
             e.set_volume(self.volume);
         }
+        // YouTube follows the same slider, but a volume change never opens its window.
+        if let (Source::YouTube, Some(y)) =
+            (self.source, self.youtube.as_ref().filter(|y| y.connected()))
+        {
+            y.send(&format!("volume {:.2}", self.volume));
+        }
+    }
+
+    // ── Sources ──────────────────────────────────────────────────────────────
+
+    /// Sends a command to the YouTube helper, opening it first when it isn't running.
+    fn yt_send(&mut self, command: &str) {
+        match &self.youtube {
+            Some(y) if y.connected() => y.send(command),
+            _ => self.open_youtube(),
+        }
+    }
+
+    /// Opens the YouTube Music window (or brings it forward).
+    pub fn open_youtube(&mut self) {
+        let result = self
+            .youtube
+            .as_ref()
+            .map_or(Err("YouTube link not started".to_string()), |y| y.launch());
+        match result {
+            Ok(()) if !self.youtube_connected() => self.say("Opening YouTube Music…"),
+            Ok(()) => {}
+            Err(e) => self.say(e),
+        }
+    }
+
+    /// Switches source; whatever was playing on the other one pauses.
+    pub fn set_source(&mut self, source: Source) {
+        if source == self.source {
+            return;
+        }
+        if self.now_play() == Play::Playing {
+            match self.source {
+                Source::Local => {
+                    if let Some(e) = &self.engine {
+                        e.pause();
+                    }
+                    self.play = Play::Paused;
+                }
+                Source::YouTube => self.yt_send("toggle"),
+            }
+        }
+        self.source = source;
+        self.scrub = None;
+        if source == Source::YouTube && !self.youtube_connected() {
+            self.open_youtube();
+        }
+        self.save();
+    }
+
+    pub fn toggle_source(&mut self) {
+        self.set_source(match self.source {
+            Source::Local => Source::YouTube,
+            Source::YouTube => Source::Local,
+        });
     }
 
     pub fn toggle_shuffle(&mut self) {
@@ -492,10 +705,14 @@ impl State {
             changed = true;
         }
 
+        if let Some(y) = &mut self.youtube {
+            changed |= y.poll();
+        }
+
         if self.play == Play::Playing && self.engine.as_ref().is_some_and(|e| e.finished()) {
             match (self.repeat, self.current) {
                 (Repeat::One, Some(i)) => self.play_index(i),
-                _ => self.next(),
+                _ => self.next_local(),
             }
             changed = true;
         }
@@ -503,12 +720,15 @@ impl State {
         let moving = if self.demo {
             self.analyzer.levels = Analyzer::demo(t as f32);
             false
+        } else if self.source == Source::YouTube {
+            let spectrum = self.youtube.as_mut().and_then(|y| y.take_spectrum());
+            self.analyzer.update_external(spectrum, dt)
         } else {
             self.analyzer.update(&self.scope, dt)
         };
         self.publish();
-        self.notify(t);
-        if self.play == Play::Playing || moving {
+        self.notify();
+        if self.now_play() == Play::Playing || moving {
             tx.wake_after(Duration::from_millis(16));
         } else if self.bridge.is_some() {
             // The notch app's once-a-second heartbeat.
@@ -519,32 +739,37 @@ impl State {
 
     /// Sends the notch app a status: 30 a second while playing, once a second otherwise, and at
     /// once when the state or track changes.
-    fn notify(&mut self, t: f64) {
+    fn notify(&mut self) {
         let Some(bridge) = &self.bridge else { return };
-        let key = (Some(self.play), self.current);
-        let every = if self.play == Play::Playing {
+        let now = self.now();
+        let key = format!("{:?}|{}|{}", now.play, now.title, now.artist);
+        let every = if now.play == Play::Playing {
             1.0 / 30.0
         } else {
             1.0
         };
-        if key == self.sent_key && t - self.sent_at < every {
+        if key == self.sent_key
+            && self
+                .sent_at
+                .is_some_and(|at| at.elapsed().as_secs_f64() < every)
+        {
             return;
         }
         bridge.send(&self.status());
-        self.sent_at = t;
+        self.sent_at = Some(std::time::Instant::now());
         self.sent_key = key;
     }
 
-    /// What the notch app shows: the loaded track, where it is, the spectrum and the skin.
+    /// What the notch app shows: the source's track, where it is, the spectrum and the skin.
     pub fn status(&self) -> serde_json::Value {
         let k = skin(self.skin);
-        let track = self.current_track();
-        let round = |v: f32| (v * 100.0).round() / 100.0;
+        let now = self.now();
+        let round = |v: f32| (f64::from(v) * 100.0).round() / 100.0;
         serde_json::json!({
             "v": 1,
-            "state": match self.play { Play::Playing => "playing", Play::Paused => "paused", Play::Stopped => "stopped" },
-            "title": track.map(|t| t.title()).unwrap_or_default(),
-            "artist": track.map(|t| t.artist().to_string()).unwrap_or_default(),
+            "state": match now.play { Play::Playing => "playing", Play::Paused => "paused", Play::Stopped => "stopped" },
+            "title": now.title,
+            "artist": now.artist,
             "pos": (self.position() * 10.0).round() / 10.0,
             "dur": self.duration().unwrap_or(0.0),
             "bands": self.analyzer.levels.bands.iter().map(|&b| round(b)).collect::<Vec<_>>(),
