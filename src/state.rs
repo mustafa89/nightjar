@@ -2,9 +2,10 @@
 
 use crate::analysis::{Analyzer, BANDS, Levels};
 use crate::audio::{Engine, Scope, StreamInfo};
+use crate::bridge::{Bridge, Command};
 use crate::library::{self, MetaReader, Track};
 use crate::settings::{self, Settings};
-use crate::skin::SKINS;
+use crate::skin::{SKINS, skin};
 use rune::{Live, LiveText, Tx};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -76,6 +77,10 @@ pub struct State {
     pub analyzer: Analyzer,
     engine: Option<Engine>,
     reader: Option<MetaReader>,
+    bridge: Option<Bridge>,
+    /// When the notch app last got a status, and what it said, to resend on any change.
+    sent_at: f64,
+    sent_key: (Option<Play>, Option<usize>),
     last_t: f64,
     seed: u64,
 
@@ -110,6 +115,9 @@ impl State {
             analyzer: Analyzer::new(),
             engine: None,
             reader: None,
+            bridge: None,
+            sent_at: 0.0,
+            sent_key: (None, None),
             last_t: 0.0,
             seed: std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
@@ -141,6 +149,7 @@ impl State {
     /// Window start: the tag reader, and tags for the restored playlist. Paths on the command
     /// line join the playlist and the first of them plays.
     pub fn start(&mut self, waker: rune::Waker) {
+        self.bridge = Some(Bridge::start(Some(waker.clone())));
         let reader = MetaReader::spawn(Some(waker));
         for t in &self.tracks {
             reader.request(t.path.clone());
@@ -469,6 +478,20 @@ impl State {
             }
         }
 
+        let commands: Vec<Command> = self
+            .bridge
+            .as_ref()
+            .map(|b| b.commands().collect())
+            .unwrap_or_default();
+        for cmd in commands {
+            match cmd {
+                Command::Toggle => self.toggle_play(),
+                Command::Next => self.next(),
+                Command::Prev => self.prev(),
+            }
+            changed = true;
+        }
+
         if self.play == Play::Playing && self.engine.as_ref().is_some_and(|e| e.finished()) {
             match (self.repeat, self.current) {
                 (Repeat::One, Some(i)) => self.play_index(i),
@@ -484,10 +507,51 @@ impl State {
             self.analyzer.update(&self.scope, dt)
         };
         self.publish();
+        self.notify(t);
         if self.play == Play::Playing || moving {
             tx.wake_after(Duration::from_millis(16));
+        } else if self.bridge.is_some() {
+            // The notch app's once-a-second heartbeat.
+            tx.wake_after(Duration::from_secs(1));
         }
         changed
+    }
+
+    /// Sends the notch app a status: 30 a second while playing, once a second otherwise, and at
+    /// once when the state or track changes.
+    fn notify(&mut self, t: f64) {
+        let Some(bridge) = &self.bridge else { return };
+        let key = (Some(self.play), self.current);
+        let every = if self.play == Play::Playing {
+            1.0 / 30.0
+        } else {
+            1.0
+        };
+        if key == self.sent_key && t - self.sent_at < every {
+            return;
+        }
+        bridge.send(&self.status());
+        self.sent_at = t;
+        self.sent_key = key;
+    }
+
+    /// What the notch app shows: the loaded track, where it is, the spectrum and the skin.
+    pub fn status(&self) -> serde_json::Value {
+        let k = skin(self.skin);
+        let track = self.current_track();
+        let round = |v: f32| (v * 100.0).round() / 100.0;
+        serde_json::json!({
+            "v": 1,
+            "state": match self.play { Play::Playing => "playing", Play::Paused => "paused", Play::Stopped => "stopped" },
+            "title": track.map(|t| t.title()).unwrap_or_default(),
+            "artist": track.map(|t| t.artist().to_string()).unwrap_or_default(),
+            "pos": (self.position() * 10.0).round() / 10.0,
+            "dur": self.duration().unwrap_or(0.0),
+            "bands": self.analyzer.levels.bands.iter().map(|&b| round(b)).collect::<Vec<_>>(),
+            "accent": k.accent,
+            "accent2": k.accent2,
+            "bars": k.bars,
+        })
     }
 
     /// Pushes levels, progress and the clock into the live values.

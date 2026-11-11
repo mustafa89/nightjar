@@ -13,7 +13,8 @@ scripts/install.sh                             # ~/Applications/Nightjar.app
 - **Deck**: a display with play state, a clock (click it for remaining time), title,
   artist · album, rate / channels / codec tags, and a 20-band spectrum with falling peak caps.
   Below it are the seek bar (drag to scrub), the transport buttons, shuffle, repeat
-  (off → playlist → track) and volume. The band beside the traffic lights drags the window.
+  (off → playlist → track) and volume. Drag any bare surface (the gaps, the card faces or the
+  visualizer) to move the window.
 - **Playlist**: drop files or folders anywhere in the window, or use `+` (file) and the folder
   button. Click a row to select it; double-click or `↵` plays it. `⌫` removes the selected row,
   and the bin clears the list. The playlist, skin, mode, volume, shuffle and repeat are kept in
@@ -26,6 +27,18 @@ scripts/install.sh                             # ~/Applications/Nightjar.app
 
 Formats: mp3, flac, wav, m4a/aac, ogg/vorbis.
 
+## Notch link
+
+Nightjar talks to NotchSwitcher (`~/code/notch-switcher`) over UDP on `127.0.0.1` only:
+
+- It sends a JSON status to port 47811: state, title, artist, position, length, the 20
+  spectrum bands and the skin's accents. It sends 30 times a second while playing and once a
+  second otherwise.
+- It accepts `toggle`, `next` or `prev` on port 47812.
+
+The notch shows a Nightjar button with a now-playing panel, and a Live Activity while music
+plays. Without the notch app, the packets are dropped.
+
 ## How it works
 
 | File | Role |
@@ -34,6 +47,7 @@ Formats: mp3, flac, wav, m4a/aac, ogg/vorbis.
 | `src/analysis.rs` | A 2048-point Hann-windowed FFT (rustfft) on the main thread, about 60 times a second: deck bands, peaks, 64 bins, a 64-point waveform, bass/mid/treble and a beat pulse. |
 | `src/state.rs` | Playlist and transport actions. `poll` reads tags, moves to the next track at the end, and publishes levels into `rune::Live` values, so the bars, seek bar and clock move without re-running the view. |
 | `src/viz.rs` | A Rune `Compositor`. It draws the UI with `Renderer::draw_with` and paints one WGSL shader into the stage's `El::effect` slot. A uniform buffer feeds the shader the levels and the skin palette. |
+| `src/bridge.rs` | The notch link: status out, commands in. |
 | `src/library.rs` | Folder scans, plus tags and durations read by symphonia on a background thread. |
 | `src/skin.rs`, `src/view.rs`, `src/icons.rs` | Skins, layout and icons. |
 

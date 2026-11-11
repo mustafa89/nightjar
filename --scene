@@ -1,0 +1,3186 @@
+{
+  "accessibility": {
+    "bounds": [
+      0.0,
+      0.0,
+      1040.0,
+      640.0
+    ],
+    "children": [
+      {
+        "bounds": [
+          0.0,
+          0.0,
+          1040.0,
+          640.0
+        ],
+        "children": [
+          {
+            "bounds": [
+              14.0,
+              14.0,
+              376.0,
+              274.4
+            ],
+            "children": [
+              {
+                "bounds": [
+                  98.0,
+                  28.1,
+                  81.0,
+                  13.8
+                ],
+                "name": "NIGHTJAR",
+                "role": "label"
+              },
+              {
+                "actions": [
+                  "click"
+                ],
+                "bounds": [
+                  248.0,
+                  24.0,
+                  128.0,
+                  22.0
+                ],
+                "children": [
+                  {
+                    "bounds": [
+                      273.0,
+                      27.8,
+                      95.0,
+                      14.4
+                    ],
+                    "name": "Midnight Chrome",
+                    "role": "label"
+                  }
+                ],
+                "description": "Next skin (K)",
+                "key": "skin",
+                "name": "Midnight Chrome",
+                "role": "button"
+              },
+              {
+                "bounds": [
+                  28.0,
+                  58.0,
+                  348.0,
+                  134.4
+                ],
+                "children": [
+                  {
+                    "bounds": [
+                      54.0,
+                      70.0,
+                      53.0,
+                      11.9
+                    ],
+                    "name": "STOPPED",
+                    "role": "label"
+                  },
+                  {
+                    "actions": [
+                      "click"
+                    ],
+                    "bounds": [
+                      40.0,
+                      83.9,
+                      118.0,
+                      42.5
+                    ],
+                    "description": "Elapsed / remaining",
+                    "key": "clock",
+                    "name": "00:00",
+                    "role": "label"
+                  },
+                  {
+                    "bounds": [
+                      168.0,
+                      72.0,
+                      196.0,
+                      18.8
+                    ],
+                    "key": "title",
+                    "name": "Drop music here",
+                    "role": "label"
+                  },
+                  {
+                    "bounds": [
+                      168.0,
+                      93.8,
+                      196.0,
+                      14.4
+                    ],
+                    "name": "mp3 · flac · wav · m4a · ogg",
+                    "role": "label"
+                  },
+                  {
+                    "bounds": [
+                      40.0,
+                      136.4,
+                      324.0,
+                      44.0
+                    ],
+                    "key": "spectrum",
+                    "role": "group"
+                  }
+                ],
+                "key": "lcd",
+                "role": "group"
+              },
+              {
+                "bounds": [
+                  28.0,
+                  204.4,
+                  348.0,
+                  14.0
+                ],
+                "key": "seek",
+                "role": "button"
+              },
+              {
+                "actions": [
+                  "click"
+                ],
+                "bounds": [
+                  28.0,
+                  235.4,
+                  34.0,
+                  34.0
+                ],
+                "description": "Previous (P)",
+                "key": "prev",
+                "role": "button"
+              },
+              {
+                "actions": [
+                  "click"
+                ],
+                "bounds": [
+                  70.0,
+                  230.4,
+                  44.0,
+                  44.0
+                ],
+                "description": "Play / pause (Space)",
+                "key": "play",
+                "role": "button"
+              },
+              {
+                "actions": [
+                  "click"
+                ],
+                "bounds": [
+                  122.0,
+                  235.4,
+                  34.0,
+                  34.0
+                ],
+                "description": "Stop (S)",
+                "key": "stop",
+                "role": "button"
+              },
+              {
+                "actions": [
+                  "click"
+                ],
+                "bounds": [
+                  164.0,
+                  235.4,
+                  34.0,
+                  34.0
+                ],
+                "description": "Next (N)",
+                "key": "next",
+                "role": "button"
+              },
+              {
+                "actions": [
+                  "click"
+                ],
+                "bounds": [
+                  214.0,
+                  239.4,
+                  26.0,
+                  26.0
+                ],
+                "description": "Shuffle (H)",
+                "key": "shuffle",
+                "role": "button"
+              },
+              {
+                "actions": [
+                  "click"
+                ],
+                "bounds": [
+                  248.0,
+                  239.4,
+                  26.0,
+                  26.0
+                ],
+                "description": "Repeat (R)",
+                "key": "repeat",
+                "role": "button"
+              },
+              {
+                "bounds": [
+                  302.0,
+                  245.4,
+                  78.0,
+                  14.0
+                ],
+                "description": "Volume (↑ ↓)",
+                "key": "volume",
+                "role": "button"
+              }
+            ],
+            "key": "deck",
+            "role": "group"
+          },
+          {
+            "bounds": [
+              14.0,
+              300.4,
+              376.0,
+              325.6
+            ],
+            "children": [
+              {
+                "bounds": [
+                  26.0,
+                  315.4,
+                  55.0,
+                  11.9
+                ],
+                "name": "PLAYLIST",
+                "role": "label"
+              },
+              {
+                "bounds": [
+                  85.0,
+                  314.2,
+                  9.5,
+                  14.4
+                ],
+                "name": "",
+                "role": "label"
+              },
+              {
+                "actions": [
+                  "click"
+                ],
+                "bounds": [
+                  298.0,
+                  309.4,
+                  24.0,
+                  24.0
+                ],
+                "description": "Add a file",
+                "key": "add-file",
+                "role": "button"
+              },
+              {
+                "actions": [
+                  "click"
+                ],
+                "bounds": [
+                  326.0,
+                  309.4,
+                  24.0,
+                  24.0
+                ],
+                "description": "Add a folder",
+                "key": "add-folder",
+                "role": "button"
+              },
+              {
+                "actions": [
+                  "click"
+                ],
+                "bounds": [
+                  354.0,
+                  309.4,
+                  24.0,
+                  24.0
+                ],
+                "description": "Clear the playlist",
+                "key": "clear",
+                "role": "button"
+              },
+              {
+                "bounds": [
+                  119.0,
+                  476.8,
+                  166.0,
+                  14.4
+                ],
+                "name": "Drop files or folders anywhere",
+                "role": "label"
+              },
+              {
+                "bounds": [
+                  26.0,
+                  599.6,
+                  352.0,
+                  14.4
+                ],
+                "key": "status",
+                "name": "No music in that drop (mp3, flac, wav, m4a, ogg)",
+                "role": "label"
+              }
+            ],
+            "key": "playlist",
+            "role": "group"
+          },
+          {
+            "bounds": [
+              402.0,
+              14.0,
+              624.0,
+              612.0
+            ],
+            "children": [
+              {
+                "bounds": [
+                  402.0,
+                  14.0,
+                  624.0,
+                  612.0
+                ],
+                "key": "viz",
+                "role": "group"
+              },
+              {
+                "bounds": [
+                  416.0,
+                  28.0,
+                  145.5,
+                  28.0
+                ],
+                "children": [
+                  {
+                    "actions": [
+                      "click"
+                    ],
+                    "bounds": [
+                      420.0,
+                      30.0,
+                      24.0,
+                      24.0
+                    ],
+                    "key": "viz-prev",
+                    "role": "button"
+                  },
+                  {
+                    "bounds": [
+                      446.0,
+                      34.8,
+                      85.5,
+                      14.4
+                    ],
+                    "name": "Aurora Tunnel",
+                    "role": "label"
+                  },
+                  {
+                    "actions": [
+                      "click"
+                    ],
+                    "bounds": [
+                      533.5,
+                      30.0,
+                      24.0,
+                      24.0
+                    ],
+                    "key": "viz-next",
+                    "role": "button"
+                  }
+                ],
+                "key": "mode",
+                "role": "group"
+              }
+            ],
+            "key": "stage",
+            "role": "group"
+          }
+        ],
+        "key": "root",
+        "role": "group"
+      }
+    ],
+    "name": "Nightjar",
+    "role": "window"
+  },
+  "anim_t": 0.0,
+  "animating": false,
+  "dark_system": true,
+  "elements": [
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "root",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root",
+      "rect": [
+        0.0,
+        0.0,
+        1040.0,
+        640.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0",
+      "rect": [
+        14.0,
+        14.0,
+        376.0,
+        612.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "deck",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck",
+      "rect": [
+        14.0,
+        14.0,
+        376.0,
+        274.38
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#0",
+      "rect": [
+        28.0,
+        24.0,
+        348.0,
+        22.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#29d3ffff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#0/#0",
+      "rect": [
+        98.0,
+        28.13,
+        81.0,
+        13.75
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "NIGHTJAR"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#0/#1",
+      "rect": [
+        187.0,
+        35.0,
+        53.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#29d3ff1f",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Next skin (K)",
+      "inert": false,
+      "key": "skin",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#0/skin",
+      "rect": [
+        248.0,
+        24.0,
+        128.0,
+        22.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#29d3ffff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#0/skin/#0",
+      "rect": [
+        256.0,
+        29.0,
+        12.0,
+        12.0
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#e6ecffff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#0/skin/#1",
+      "rect": [
+        273.0,
+        27.81,
+        95.0,
+        14.38
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "Midnight Chrome"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#040912ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "lcd",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd",
+      "rect": [
+        28.0,
+        58.0,
+        348.0,
+        134.38
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/#0",
+      "rect": [
+        40.0,
+        70.0,
+        324.0,
+        56.38
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/#0/#0",
+      "rect": [
+        40.0,
+        70.0,
+        118.0,
+        56.38
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/#0/#0/#0",
+      "rect": [
+        40.0,
+        70.0,
+        118.0,
+        11.88
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#7cf3ffff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/#0/#0/#0/#0",
+      "rect": [
+        40.0,
+        71.44,
+        9.0,
+        9.0
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#7cf3ffbf",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/#0/#0/#0/#1",
+      "rect": [
+        54.0,
+        70.0,
+        53.0,
+        11.88
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "STOPPED"
+    },
+    {
+      "blur": 0.0,
+      "color": "#7cf3ffff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Elapsed / remaining",
+      "inert": false,
+      "key": "clock",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/#0/#0/clock",
+      "rect": [
+        40.0,
+        83.88,
+        118.0,
+        42.5
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "00:00"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/#0/#1",
+      "rect": [
+        168.0,
+        70.0,
+        196.0,
+        56.38
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#7cf3ffff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "title",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/#0/#1/title",
+      "rect": [
+        168.0,
+        72.0,
+        196.0,
+        18.75
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "Drop music here"
+    },
+    {
+      "blur": 0.0,
+      "color": "#7cf3ff99",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/#0/#1/#1",
+      "rect": [
+        168.0,
+        93.75,
+        196.0,
+        14.38
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "mp3 · flac · wav · m4a · ogg"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/#0/#1/#2",
+      "rect": [
+        168.0,
+        111.13,
+        196.0,
+        3.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "spectrum",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum",
+      "rect": [
+        40.0,
+        136.38,
+        324.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#0",
+      "rect": [
+        43.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#0/#0",
+      "rect": [
+        43.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        43.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#0/#1",
+      "rect": [
+        43.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        43.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#1",
+      "rect": [
+        59.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#1/#0",
+      "rect": [
+        59.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        59.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#1/#1",
+      "rect": [
+        59.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        59.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#2",
+      "rect": [
+        75.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#2/#0",
+      "rect": [
+        75.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        75.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#2/#1",
+      "rect": [
+        75.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        75.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#3",
+      "rect": [
+        91.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#3/#0",
+      "rect": [
+        91.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        91.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#3/#1",
+      "rect": [
+        91.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        91.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#4",
+      "rect": [
+        107.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#4/#0",
+      "rect": [
+        107.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        107.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#4/#1",
+      "rect": [
+        107.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        107.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#5",
+      "rect": [
+        123.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#5/#0",
+      "rect": [
+        123.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        123.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#5/#1",
+      "rect": [
+        123.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        123.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#6",
+      "rect": [
+        139.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#6/#0",
+      "rect": [
+        139.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        139.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#6/#1",
+      "rect": [
+        139.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        139.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#7",
+      "rect": [
+        155.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#7/#0",
+      "rect": [
+        155.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        155.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#7/#1",
+      "rect": [
+        155.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        155.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#8",
+      "rect": [
+        171.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#8/#0",
+      "rect": [
+        171.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        171.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#8/#1",
+      "rect": [
+        171.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        171.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#9",
+      "rect": [
+        187.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#9/#0",
+      "rect": [
+        187.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        187.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#9/#1",
+      "rect": [
+        187.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        187.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#10",
+      "rect": [
+        203.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#10/#0",
+      "rect": [
+        203.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        203.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#10/#1",
+      "rect": [
+        203.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        203.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#11",
+      "rect": [
+        219.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#11/#0",
+      "rect": [
+        219.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        219.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#11/#1",
+      "rect": [
+        219.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        219.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#12",
+      "rect": [
+        235.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#12/#0",
+      "rect": [
+        235.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        235.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#12/#1",
+      "rect": [
+        235.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        235.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#13",
+      "rect": [
+        251.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#13/#0",
+      "rect": [
+        251.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        251.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#13/#1",
+      "rect": [
+        251.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        251.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#14",
+      "rect": [
+        267.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#14/#0",
+      "rect": [
+        267.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        267.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#14/#1",
+      "rect": [
+        267.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        267.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#15",
+      "rect": [
+        283.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#15/#0",
+      "rect": [
+        283.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        283.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#15/#1",
+      "rect": [
+        283.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        283.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#16",
+      "rect": [
+        299.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#16/#0",
+      "rect": [
+        299.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        299.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#16/#1",
+      "rect": [
+        299.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        299.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#17",
+      "rect": [
+        315.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#17/#0",
+      "rect": [
+        315.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        315.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#17/#1",
+      "rect": [
+        315.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        315.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#18",
+      "rect": [
+        331.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#18/#0",
+      "rect": [
+        331.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        331.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#18/#1",
+      "rect": [
+        331.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        331.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#19",
+      "rect": [
+        347.5,
+        136.38,
+        13.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#19/#0",
+      "rect": [
+        347.5,
+        180.38,
+        13.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        347.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#7cf3ffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/lcd/spectrum/#19/#1",
+      "rect": [
+        347.5,
+        178.38,
+        13.0,
+        2.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        347.5,
+        136.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "seek",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/seek",
+      "rect": [
+        28.0,
+        204.38,
+        348.0,
+        14.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#173a44ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/seek/#0",
+      "rect": [
+        28.0,
+        209.38,
+        348.0,
+        4.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/seek/#0/#0",
+      "rect": [
+        28.0,
+        209.38,
+        0.0,
+        4.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        28.0,
+        209.38,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 0.0,
+      "path": "root/#0/deck/seek/#0/#1",
+      "rect": [
+        21.0,
+        204.38,
+        14.0,
+        14.0
+      ],
+      "role": "group",
+      "scale": 1.0,
+      "target": [
+        28.0,
+        204.38,
+        14.0,
+        14.0
+      ]
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3",
+      "rect": [
+        28.0,
+        230.38,
+        348.0,
+        44.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Previous (P)",
+      "inert": false,
+      "key": "prev",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/prev",
+      "rect": [
+        28.0,
+        235.38,
+        34.0,
+        34.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#e6ecffff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/prev/#0",
+      "rect": [
+        37.86,
+        245.23,
+        14.28,
+        14.28
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Play / pause (Space)",
+      "inert": false,
+      "key": "play",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/play",
+      "rect": [
+        70.0,
+        230.38,
+        44.0,
+        44.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#e6ecffff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/play/#0",
+      "rect": [
+        82.76,
+        243.13,
+        18.48,
+        18.48
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Stop (S)",
+      "inert": false,
+      "key": "stop",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/stop",
+      "rect": [
+        122.0,
+        235.38,
+        34.0,
+        34.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#e6ecffff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/stop/#0",
+      "rect": [
+        131.86,
+        245.23,
+        14.28,
+        14.28
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Next (N)",
+      "inert": false,
+      "key": "next",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/next",
+      "rect": [
+        164.0,
+        235.38,
+        34.0,
+        34.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#e6ecffff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/next/#0",
+      "rect": [
+        173.86,
+        245.23,
+        14.28,
+        14.28
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/#4",
+      "rect": [
+        206.0,
+        252.38,
+        0.0,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Shuffle (H)",
+      "inert": false,
+      "key": "shuffle",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/shuffle",
+      "rect": [
+        214.0,
+        239.38,
+        26.0,
+        26.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bdff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/shuffle/#0",
+      "rect": [
+        219.5,
+        244.88,
+        15.0,
+        15.0
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Repeat (R)",
+      "inert": false,
+      "key": "repeat",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/repeat",
+      "rect": [
+        248.0,
+        239.38,
+        26.0,
+        26.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bdff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/repeat/#0",
+      "rect": [
+        253.5,
+        244.88,
+        15.0,
+        15.0
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/#7",
+      "rect": [
+        282.0,
+        245.38,
+        98.0,
+        14.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bdff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/#7/#0",
+      "rect": [
+        282.0,
+        245.38,
+        14.0,
+        14.0
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Volume (↑ ↓)",
+      "inert": false,
+      "key": "volume",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/#7/volume",
+      "rect": [
+        302.0,
+        245.38,
+        78.0,
+        14.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#173a44ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/#7/volume/#0",
+      "rect": [
+        302.0,
+        250.38,
+        78.0,
+        4.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#b16cffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/#7/volume/#0/#0",
+      "rect": [
+        302.0,
+        250.38,
+        62.4,
+        4.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#e6ecffff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/deck/#3/#7/volume/#0/#1",
+      "rect": [
+        359.4,
+        247.38,
+        10.0,
+        10.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "playlist",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist",
+      "rect": [
+        14.0,
+        300.38,
+        376.0,
+        325.63
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#0",
+      "rect": [
+        26.0,
+        308.38,
+        352.0,
+        26.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#29d3ffff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#0/#0",
+      "rect": [
+        26.0,
+        315.44,
+        55.0,
+        11.88
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "PLAYLIST"
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bdff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#0/#1",
+      "rect": [
+        85.0,
+        314.19,
+        9.5,
+        14.38
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": ""
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#0/#2",
+      "rect": [
+        98.5,
+        321.38,
+        195.5,
+        0.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Add a file",
+      "inert": false,
+      "key": "add-file",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#0/add-file",
+      "rect": [
+        298.0,
+        309.38,
+        24.0,
+        24.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bdff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#0/add-file/#0",
+      "rect": [
+        303.0,
+        314.38,
+        14.0,
+        14.0
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Add a folder",
+      "inert": false,
+      "key": "add-folder",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#0/add-folder",
+      "rect": [
+        326.0,
+        309.38,
+        24.0,
+        24.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bdff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#0/add-folder/#0",
+      "rect": [
+        331.0,
+        314.38,
+        14.0,
+        14.0
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "help": "Clear the playlist",
+      "inert": false,
+      "key": "clear",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#0/clear",
+      "rect": [
+        354.0,
+        309.38,
+        24.0,
+        24.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bdff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#0/clear/#0",
+      "rect": [
+        359.0,
+        314.38,
+        14.0,
+        14.0
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#1",
+      "rect": [
+        26.0,
+        340.38,
+        352.0,
+        253.25
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bd99",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#1/#0",
+      "rect": [
+        188.0,
+        442.81,
+        28.0,
+        28.0
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bdff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/#1/#1",
+      "rect": [
+        119.0,
+        476.81,
+        166.0,
+        14.38
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "Drop files or folders anywhere"
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bdff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "status",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/#0/playlist/status",
+      "rect": [
+        26.0,
+        599.63,
+        352.0,
+        14.38
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "No music in that drop (mp3, flac, wav, m4a, ogg)"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#000000ff",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "stage",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/stage",
+      "rect": [
+        402.0,
+        14.0,
+        624.0,
+        612.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "viz",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/stage/viz",
+      "rect": [
+        402.0,
+        14.0,
+        624.0,
+        612.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000059",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "mode",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/stage/mode",
+      "rect": [
+        416.0,
+        28.0,
+        145.5,
+        28.0
+      ],
+      "role": "group",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "viz-prev",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/stage/mode/viz-prev",
+      "rect": [
+        420.0,
+        30.0,
+        24.0,
+        24.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bdff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/stage/mode/viz-prev/#0",
+      "rect": [
+        425.0,
+        35.0,
+        14.0,
+        14.0
+      ],
+      "role": "icon",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#ffffffe6",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/stage/mode/#1",
+      "rect": [
+        446.0,
+        34.81,
+        85.5,
+        14.38
+      ],
+      "role": "text",
+      "scale": 1.0,
+      "text": "Aurora Tunnel"
+    },
+    {
+      "blur": 0.0,
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "key": "viz-next",
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/stage/mode/viz-next",
+      "rect": [
+        533.5,
+        30.0,
+        24.0,
+        24.0
+      ],
+      "role": "button",
+      "scale": 1.0
+    },
+    {
+      "blur": 0.0,
+      "color": "#8592bdff",
+      "fill": "#00000000",
+      "focusVisible": false,
+      "focusable": false,
+      "focused": false,
+      "inert": false,
+      "loopPhase": null,
+      "opacity": 1.0,
+      "path": "root/stage/mode/viz-next/#0",
+      "rect": [
+        538.5,
+        35.0,
+        14.0,
+        14.0
+      ],
+      "role": "icon",
+      "scale": 1.0
+    }
+  ],
+  "reduced_motion": false,
+  "scale": 2.0,
+  "t": 0.0,
+  "time_scale": 1.0,
+  "title": "Nightjar",
+  "viewport": [
+    1040.0,
+    640.0
+  ],
+  "warnings": []
+}

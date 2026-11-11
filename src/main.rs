@@ -6,6 +6,7 @@
 
 mod analysis;
 mod audio;
+mod bridge;
 mod icons;
 mod library;
 mod settings;
@@ -201,6 +202,26 @@ mod tests {
         click(&mut rt, "viz-prev");
         click(&mut rt, "viz-prev");
         assert_eq!(rt.state.viz, state::VIZ_MODES.len() - 1, "wraps backwards");
+    }
+
+    /// Whether a press at (x, y) starts moving the window.
+    fn drags_window(rt: &mut Runtime<State>, x: f32, y: f32) -> bool {
+        rt.pointer_down(x, y);
+        let action = rt.take_titlebar_action();
+        rt.pointer_up(x, y);
+        rt.frame(1.0 / 60.0);
+        matches!(action, Some(rune::TitlebarAction::Drag))
+    }
+
+    #[test]
+    fn bare_surfaces_move_the_window_and_controls_do_not() {
+        let mut rt = deck_runtime();
+        assert!(drags_window(&mut rt, 6.0, 300.0), "window padding");
+        assert!(drags_window(&mut rt, 220.0, 36.0), "deck header between wordmark and skin chip");
+        assert!(drags_window(&mut rt, 700.0, 300.0), "visualizer stage");
+        let (x, y) = rt.find("skin").unwrap();
+        assert!(!drags_window(&mut rt, x, y), "skin chip keeps its press");
+        assert_eq!(rt.state.skin, 1, "and the press still switched the skin");
     }
 
     #[test]

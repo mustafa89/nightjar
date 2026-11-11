@@ -15,6 +15,8 @@ use rune::{
 
 pub const DECK_W: f32 = 376.0;
 const PAD: f32 = 14.0;
+/// Header inset from the deck's inner edge past the traffic lights, with a 12 pt gap.
+const LIGHTS_CLEAR: f32 = 70.0;
 
 const WORDMARK: TextStyle = TextStyle::new(11.0, 800.0).tracking(3.0);
 const CLOCK: TextStyle = TextStyle::new(34.0, 500.0).mono().features("'tnum' 1");
@@ -40,6 +42,8 @@ pub fn view(s: &State, _cx: &mut Cx<State>) -> El {
         .padding(PAD)
         .gap(12.0)
         .gradient(c(k.bg[0]), c(k.bg[1]))
+        // Any bare surface moves the window, as on a skinned player; controls keep their presses.
+        .window_drag()
         .child(left)
         .child(stage(s, k))
         .on_drop_files(|s: &mut State, files, _tx| {
@@ -67,13 +71,12 @@ fn card(k: &Skin) -> El {
 }
 
 fn deck(s: &State, k: &'static Skin) -> El {
-    // The traffic lights sit at the deck's top-left; the band beside them drags the window.
+    // The traffic lights sit at the deck's top-left (window x 28 to about 86); the wordmark clears them.
     let header = row()
         .h(22.0)
-        .pl(62.0)
+        .pl(LIGHTS_CLEAR)
         .center_y()
         .gap(8.0)
-        .window_drag()
         .child(text("NIGHTJAR").font(WORDMARK).color(c(k.accent)))
         .child(spacer())
         .child(
